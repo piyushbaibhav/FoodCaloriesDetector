@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { getAuth } from 'firebase/auth';
 import { db } from '../firebase';
 import { doc, setDoc } from 'firebase/firestore';
+import { getNutritionalFacts } from '../api/nutrition-facts';
 
 const NutritionalFactFinder = () => {
   const [foodName, setFoodName] = useState('');
@@ -20,20 +21,8 @@ const NutritionalFactFinder = () => {
     setResult(null);
 
     try {
-      // Call your Gemini API endpoint
-      const response = await fetch('/api/nutrition-facts', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ food: foodName }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch nutritional information');
-      }
-
-      const data = await response.json();
+      // Direct call to Gemini API through our utility function
+      const data = await getNutritionalFacts(foodName);
       setResult(data);
 
       // Save to Firestore if user is logged in
