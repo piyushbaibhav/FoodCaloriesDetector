@@ -6,6 +6,7 @@ import {
   Menu,
   LogOut,
   Utensils,
+  Search,
 } from "lucide-react";
 import { getAuth, signOut } from "firebase/auth";
 
@@ -29,7 +30,8 @@ const Sidebar = ({ setSection }) => {
     { icon: <Utensils />, label: "Food Input", id: "input" },
     { icon: <BarChart2 />, label: "Calorie History", id: "calorie" },
     { icon: <HeartPulse />, label: "BMI", id: "bmi" },
-    { icon: <Info />, label: "Effect on Body", id: "effect" },
+    { icon: <Info />, label: "Progress Toward Daily Goal", id: "progress" },
+    { icon: <Search />, label: "Nutritional Fact Finder", id: "facts" },
   ];
 
   return (
@@ -56,7 +58,7 @@ const Sidebar = ({ setSection }) => {
               <div
                 key={item.id}
                 onClick={() => {
-                  setSection(item.id);
+                  setSection(item.id);  // Pass the correct section ID
                   setOpen(false); // Close sidebar on mobile
                 }}
                 className="group hover:bg-rose-300 md:hover:translate-x-2 transition-all duration-300 p-3 rounded-lg cursor-pointer flex items-center gap-3"

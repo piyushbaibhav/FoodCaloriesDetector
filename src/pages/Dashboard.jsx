@@ -4,11 +4,21 @@ import FoodInput from "../components/FoodInput";
 import Sidebar from "../components/Sidebar";
 import CalorieChart from "../components/Charts/CalorieChart";
 import BMICalculator from "../components/BMI";
-import NutritionPieChart from "../components/Charts/NutritionPieChart"; // 👈 Pie Chart Import
+import GoalSetting from "../components/GoalSetting";
+import NutrientProgress from "../components/NutrientProgress";
+import NutritionPieChart from "../components/Charts/NutritionPieChart";
+import NutritionalFactFinder from "../components/NutritionalFactFinder";
 
 const Dashboard = () => {
   const [username, setUsername] = useState("");
   const [section, setSection] = useState("input");
+  const [dailyGoals, setDailyGoals] = useState({
+    carbs: 0,
+    protein: 0,
+    fat: 0,
+    calories: 0,
+  });
+  const [goalsSet, setGoalsSet] = useState(false);
 
   useEffect(() => {
     const auth = getAuth();
@@ -35,17 +45,36 @@ const Dashboard = () => {
             <BMICalculator />
           </div>
         );
-      case "effect":
+      case "progress":
+        if (!goalsSet) {
+          return (
+            <GoalSetting
+              setDailyGoals={setDailyGoals}
+              setGoalsSet={setGoalsSet}
+            />
+          );
+        } else {
+          return (
+            <div className="flex flex-col lg:flex-row w-full gap-6 mt-10">
+              <div className="flex-1">
+                <h1 className="text-2xl font-bold text-center text-rose-700 mb-4">
+                  🏅 Progress Toward Daily Goals
+                </h1>
+                <p className="text-center text-gray-700 mb-6">
+                  Track your progress toward achieving daily nutritional goals.
+                </p>
+                <NutrientProgress />
+              </div>
+              <div className="w-full lg:w-[400px]">
+                <CalorieChart />
+              </div>
+            </div>
+          );
+        }
+      case "facts":
         return (
           <div className="mt-10 w-full max-w-5xl">
-            <div className="bg-white shadow-xl rounded-xl p-6 text-gray-700">
-              <h2 className="text-2xl font-bold mb-3 text-center">
-                🧠 Gemini AI Prediction (Coming Soon)
-              </h2>
-              <p className="text-center">
-                Gemini AI will analyze the food image and quantity to predict calorie intake and its effect on your BMI.
-              </p>
-            </div>
+            <NutritionalFactFinder />
           </div>
         );
       default:
@@ -63,7 +92,7 @@ const Dashboard = () => {
               <FoodInput />
             </div>
             <div className="w-full lg:w-[400px]">
-              <NutritionPieChart /> {/* ✅ Right side pie chart */}
+              <NutritionPieChart />
             </div>
           </div>
         );
