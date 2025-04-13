@@ -3,7 +3,8 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
 import FoodInput from "../components/FoodInput";
 import Sidebar from "../components/Sidebar";
 import CalorieChart from "../components/Charts/CalorieChart";
-import BMICalculator from "../components/BMI"; // ✅ Correct import
+import BMICalculator from "../components/BMI";
+import NutritionPieChart from "../components/Charts/NutritionPieChart"; // 👈 Pie Chart Import
 
 const Dashboard = () => {
   const [username, setUsername] = useState("");
@@ -31,7 +32,7 @@ const Dashboard = () => {
       case "bmi":
         return (
           <div className="mt-10 w-full max-w-5xl">
-            <BMICalculator /> {/* ✅ Correct usage */}
+            <BMICalculator />
           </div>
         );
       case "effect":
@@ -49,17 +50,22 @@ const Dashboard = () => {
         );
       default:
         return (
-          <>
-            <div className="w-full max-w-3xl text-center">
-              <h1 className="text-3xl font-bold mb-2 text-rose-700">
-                👋 Hello, {username}
-              </h1>
-              <h2 className="text-xl mb-6 text-gray-700">
-                🍽️ What food are you having?
-              </h2>
+          <div className="flex flex-col lg:flex-row w-full gap-6">
+            <div className="flex-1">
+              <div className="w-full max-w-3xl text-center">
+                <h1 className="text-3xl font-bold mb-2 text-rose-700">
+                  👋 Hello, {username}
+                </h1>
+                <h2 className="text-xl mb-6 text-gray-700">
+                  🍽️ What food are you having?
+                </h2>
+              </div>
+              <FoodInput />
             </div>
-            <FoodInput />
-          </>
+            <div className="w-full lg:w-[400px]">
+              <NutritionPieChart /> {/* ✅ Right side pie chart */}
+            </div>
+          </div>
         );
     }
   };
