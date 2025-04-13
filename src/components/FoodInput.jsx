@@ -159,12 +159,15 @@ Quantity: ${qty}
 
   const saveData = async (base64Image = "") => {
     const username = localStorage.getItem("username") || "Anonymous";
+    const nutritionInfo = await getNutritionFromGemini(foodName, quantity);
+    
     const foodData = {
       foodName,
       quantity,
       image: base64Image,
       username,
       timestamp: serverTimestamp(),
+      nutritionInfo,
     };
 
     await addDoc(collection(db, "foodEntries"), foodData);

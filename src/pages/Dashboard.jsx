@@ -8,6 +8,7 @@ import GoalSetting from "../components/GoalSetting";
 import NutrientProgress from "../components/NutrientProgress";
 import NutritionPieChart from "../components/Charts/NutritionPieChart";
 import NutritionalFactFinder from "../components/NutritionalFactFinder";
+import FoodLog from "../components/FoodLog";
 
 // Decorative SVG Vector
 const WaveVector = () => (
@@ -41,6 +42,15 @@ const Dashboard = () => {
 
   const renderSection = () => {
     switch (section) {
+      case "foodlog":
+        return (
+          <div className="mt-10 w-full max-w-5xl bg-white p-6 rounded-xl shadow-md">
+            <h1 className="text-2xl font-bold text-green-700 mb-6">
+              Food Log
+            </h1>
+            <FoodLog />
+          </div>
+        );
       case "calorie":
         return (
           <div className="mt-10 w-full max-w-5xl bg-white p-6 rounded-xl shadow-md">
