@@ -15,6 +15,14 @@ const NutritionLogo = () => (
   </svg>
 );
 
+// Decorative SVG Vector
+const WaveVector = () => (
+  <svg className="absolute bottom-0 left-0 w-full h-32" viewBox="0 0 1200 120" preserveAspectRatio="none">
+    <path d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z" fill="currentColor" opacity="0.1"></path>
+    <path d="M0,0V15.81C13,36.92,27.64,56.86,47.69,72.05,99.41,111.27,165,111,224.58,91.58c31.15-10.15,60.09-26.47,89.67-39.8V0Z" fill="currentColor" opacity="0.1"></path>
+  </svg>
+);
+
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -54,14 +62,9 @@ export default function Login() {
     <div className="min-h-screen flex flex-col items-center justify-center bg-[#f8fafc] relative overflow-hidden">
       {/* Decorative Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-0 right-0 w-1/3 h-full bg-green-50 opacity-20 -rotate-12 transform origin-bottom-right"></div>
+        <div className="absolute top-0 right-0 w-1/3 h-full bg-[#e0f2fe] opacity-20 -rotate-12 transform origin-bottom-right"></div>
+        <WaveVector />
       </div>
-      
-      {/* Wave Vector */}
-      <svg className="absolute bottom-0 left-0 w-full h-32" viewBox="0 0 1200 120" preserveAspectRatio="none">
-        <path d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z" fill="#10b981" opacity="0.1"></path>
-        <path d="M0,0V15.81C13,36.92,27.64,56.86,47.69,72.05,99.41,111.27,165,111,224.58,91.58c31.15-10.15,60.09-26.47,89.67-39.8V0Z" fill="#10b981" opacity="0.1"></path>
-      </svg>
 
       {/* Main Content */}
       <div className="z-10 w-full max-w-md px-4">

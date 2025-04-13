@@ -2,13 +2,33 @@ import React, { useEffect, useState } from 'react';
 import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
 import { db } from '../firebase';
-import { doc, onSnapshot, collection, query, where, getDocs } from 'firebase/firestore';
+import { doc, onSnapshot, collection, query, orderBy, getDocs } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import dayjs from 'dayjs';
 
+// Custom SVG Icons
+const ProgressIcon = () => (
+  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+    <path d="M12 20c4.41 0 8-3.59 8-8s-3.59-8-8-8v8l-4-4 4-4v8c3.31 0 6 2.69 6 6s-2.69 6-6 6z"/>
+  </svg>
+);
+
+const SuccessIcon = () => (
+  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+  </svg>
+);
+
 const NutrientProgress = () => {
   const [goals, setGoals] = useState(null);
-  const [consumed, setConsumed] = useState(null);
+  const [nutrientData, setNutrientData] = useState({
+    calories: 0,
+    protein: 0,
+    fat: 0,
+    carbs: 0,
+    fiber: 0,
+  });
   const auth = getAuth();
   const user = auth.currentUser;
 
@@ -39,7 +59,6 @@ const NutrientProgress = () => {
 
     const todayKey = new Date().toISOString().split('T')[0];
     
-    // Listen to goals
     const goalsUnsubscribe = onSnapshot(
       doc(db, 'users', user.uid, 'dailyGoals', todayKey),
       (doc) => {
@@ -49,52 +68,56 @@ const NutrientProgress = () => {
       }
     );
 
-    // Function to calculate daily totals from food entries
-    const calculateDailyTotals = async () => {
-      const startOfDay = dayjs().startOf('day');
-      
-      const foodEntriesRef = collection(db, "foodEntries");
-      const q = query(foodEntriesRef, where('timestamp', '>=', startOfDay.toDate()));
-      
+    const fetchData = async () => {
+      const q = query(
+        collection(db, "foodEntries"),
+        orderBy("timestamp", "desc")
+      );
       const querySnapshot = await getDocs(q);
-      let dailyTotals = {
+
+      let totalNutrients = {
         calories: 0,
         protein: 0,
         fat: 0,
         carbs: 0,
-        fiber: 0
+        fiber: 0,
       };
+
+      const today = dayjs().startOf("day");
 
       querySnapshot.forEach((doc) => {
         const data = doc.data();
-        const nutrition = extractNutrients(data.nutritionInfo);
-        const quantity = parseFloat(data.quantity) / 100; // Convert to percentage
+        const timestamp = data.timestamp?.toDate?.();
 
-        dailyTotals.calories += nutrition.calories * quantity;
-        dailyTotals.protein += nutrition.protein * quantity;
-        dailyTotals.fat += nutrition.fat * quantity;
-        dailyTotals.carbs += nutrition.carbs * quantity;
-        dailyTotals.fiber += nutrition.fiber * quantity;
+        if (timestamp && dayjs(timestamp).isAfter(today)) {
+          const nutrition = extractNutrients(data.nutritionInfo);
+          totalNutrients.calories += nutrition.calories;
+          totalNutrients.protein += nutrition.protein;
+          totalNutrients.fat += nutrition.fat;
+          totalNutrients.carbs += nutrition.carbs;
+          totalNutrients.fiber += nutrition.fiber;
+        }
       });
 
-      setConsumed({
-        calories: Number(dailyTotals.calories.toFixed(1)),
-        protein: Number(dailyTotals.protein.toFixed(1)),
-        fat: Number(dailyTotals.fat.toFixed(1)),
-        carbs: Number(dailyTotals.carbs.toFixed(1)),
-        fiber: Number(dailyTotals.fiber.toFixed(1)),
+      setNutrientData({
+        calories: Number(totalNutrients.calories.toFixed(1)),
+        protein: Number(totalNutrients.protein.toFixed(1)),
+        fat: Number(totalNutrients.fat.toFixed(1)),
+        carbs: Number(totalNutrients.carbs.toFixed(1)),
+        fiber: Number(totalNutrients.fiber.toFixed(1)),
       });
     };
 
-    // Initial calculation
-    calculateDailyTotals();
+    fetchData();
 
-    // Set up real-time listener for food entries
     const foodEntriesRef = collection(db, "foodEntries");
-    const q = query(foodEntriesRef, where('timestamp', '>=', dayjs().startOf('day').toDate()));
+    const q = query(
+      foodEntriesRef,
+      orderBy("timestamp", "desc")
+    );
     
     const unsubscribe = onSnapshot(q, () => {
-      calculateDailyTotals();
+      fetchData();
     });
 
     return () => {
@@ -103,43 +126,157 @@ const NutrientProgress = () => {
     };
   }, [user]);
 
-  if (!goals || !consumed) {
-    return <div className="text-center p-4">Loading...</div>;
+  if (!goals || !nutrientData) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
+      </div>
+    );
   }
 
+  const getGradientColor = (percentage) => {
+    if (percentage >= 100) return '#10b981'; // Green for completed
+    return `url(#gradient-${Math.min(Math.floor(percentage / 10) * 10, 90)})`;
+  };
+
   const nutrients = [
-    { name: 'Carbs', consumed: consumed.carbs, goal: goals.carbs, color: '#FF6B6B', unit: 'g' },
-    { name: 'Protein', consumed: consumed.protein, goal: goals.protein, color: '#4ECDC4', unit: 'g' },
-    { name: 'Fat', consumed: consumed.fat, goal: goals.fat, color: '#45B7D1', unit: 'g' },
-    { name: 'Calories', consumed: consumed.calories, goal: goals.calories, color: '#96CEB4', unit: 'kcal' },
+    { name: 'Carbs', consumed: nutrientData.carbs, goal: goals.carbs, unit: 'g', icon: '🍞' },
+    { name: 'Protein', consumed: nutrientData.protein, goal: goals.protein, unit: 'g', icon: '🍗' },
+    { name: 'Fat', consumed: nutrientData.fat, goal: goals.fat, unit: 'g', icon: '🥑' },
+    { name: 'Calories', consumed: nutrientData.calories, goal: goals.calories, unit: 'kcal', icon: '🔥' },
   ];
 
   return (
-    <div className="grid grid-cols-2 gap-6 p-6">
-      {nutrients.map((nutrient) => (
-        <div key={nutrient.name} className="flex flex-col items-center">
-          <div className="w-32 h-32">
-            <CircularProgressbar
-              value={Math.min((nutrient.consumed / nutrient.goal) * 100, 100)}
-              text={`${Math.round((nutrient.consumed / nutrient.goal) * 100)}%`}
-              styles={buildStyles({
-                textSize: '16px',
-                pathColor: nutrient.color,
-                textColor: '#374151',
-                trailColor: '#f3f4f6',
-              })}
-            />
+    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+      {/* SVG Gradients for circular progress */}
+      <svg width="0" height="0" className="absolute">
+        <defs>
+          <linearGradient id="gradient-0" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#10b981" />
+            <stop offset="100%" stopColor="#10b981" />
+          </linearGradient>
+          <linearGradient id="gradient-10" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#10b981" />
+            <stop offset="100%" stopColor="#34d399" />
+          </linearGradient>
+          <linearGradient id="gradient-20" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#34d399" />
+            <stop offset="100%" stopColor="#6ee7b7" />
+          </linearGradient>
+          <linearGradient id="gradient-30" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#6ee7b7" />
+            <stop offset="100%" stopColor="#a7f3d0" />
+          </linearGradient>
+          <linearGradient id="gradient-40" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#a7f3d0" />
+            <stop offset="100%" stopColor="#f59e0b" />
+          </linearGradient>
+          <linearGradient id="gradient-50" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#f59e0b" />
+            <stop offset="100%" stopColor="#fbbf24" />
+          </linearGradient>
+          <linearGradient id="gradient-60" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#fbbf24" />
+            <stop offset="100%" stopColor="#fcd34d" />
+          </linearGradient>
+          <linearGradient id="gradient-70" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#fcd34d" />
+            <stop offset="100%" stopColor="#f97316" />
+          </linearGradient>
+          <linearGradient id="gradient-80" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#f97316" />
+            <stop offset="100%" stopColor="#fb923c" />
+          </linearGradient>
+          <linearGradient id="gradient-90" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#fb923c" />
+            <stop offset="100%" stopColor="#fdba74" />
+          </linearGradient>
+        </defs>
+      </svg>
+
+      <div className="flex items-center mb-8">
+        <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-4">
+          <ProgressIcon className="text-green-600" />
+        </div>
+        <div>
+          <h2 className="text-xl font-semibold text-gray-800">Daily Nutrient Progress</h2>
+          <p className="text-gray-500 text-sm">Track your nutrition goals achievement</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {nutrients.map((nutrient) => {
+          const percentage = Math.min((nutrient.consumed / nutrient.goal) * 100, 100).toFixed(1);
+          const isComplete = percentage >= 100;
+          const pathColor = getGradientColor(percentage);
+
+          return (
+            <div key={nutrient.name} className="flex flex-col items-center">
+              <div className="w-full max-w-[180px] mb-3">
+                <CircularProgressbar
+                  value={percentage}
+                  text={`${percentage}%`}
+                  styles={buildStyles({
+                    pathColor: pathColor,
+                    textColor: '#1f2937',
+                    trailColor: '#f3f4f6',
+                    textSize: '16px',
+                    pathTransitionDuration: 0.5,
+                    pathTransition: 'stroke-dashoffset 0.5s ease 0s',
+                  })}
+                />
+              </div>
+              
+              <div className="text-center w-full">
+                <div className="flex items-center justify-center mb-1">
+                  <span className="text-lg mr-2">{nutrient.icon}</span>
+                  <h3 className="font-medium text-gray-800">{nutrient.name}</h3>
+                  {isComplete && (
+                    <span className="ml-2">
+                      <SuccessIcon className="text-green-500" />
+                    </span>
+                  )}
+                </div>
+                <p className="text-sm text-gray-500 mb-2">
+                  {nutrient.consumed.toFixed(1)} / {nutrient.goal}{nutrient.unit}
+                </p>
+                <div className="w-full bg-gray-100 rounded-full h-1.5">
+                  <div 
+                    className="h-1.5 rounded-full" 
+                    style={{ 
+                      width: `${percentage}%`,
+                      background: pathColor
+                    }}
+                  ></div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="mt-8 pt-6 border-t border-gray-100">
+        <div className="flex flex-wrap justify-center gap-4">
+          <div className="flex items-center">
+            <div className="w-3 h-3 rounded-full bg-gradient-to-r from-green-400 to-green-600 mr-2"></div>
+            <span className="text-xs text-gray-600">Low (0-30%)</span>
           </div>
-          <div className="mt-2 text-center">
-            <h3 className="font-medium text-gray-900">{nutrient.name}</h3>
-            <p className="text-sm text-gray-500">
-              {`${nutrient.consumed.toFixed(1)}/${nutrient.goal}${nutrient.unit}`}
-            </p>
+          <div className="flex items-center">
+            <div className="w-3 h-3 rounded-full bg-gradient-to-r from-yellow-400 to-yellow-600 mr-2"></div>
+            <span className="text-xs text-gray-600">Moderate (30-70%)</span>
+          </div>
+          <div className="flex items-center">
+            <div className="w-3 h-3 rounded-full bg-gradient-to-r from-orange-400 to-orange-600 mr-2"></div>
+            <span className="text-xs text-gray-600">High (70-100%)</span>
+          </div>
+          <div className="flex items-center">
+            <div className="w-3 h-3 rounded-full bg-green-500 mr-2"></div>
+            <span className="text-xs text-gray-600">Goal Achieved</span>
           </div>
         </div>
-      ))}
+      </div>
     </div>
   );
 };
 
-export default NutrientProgress; 
+export default NutrientProgress;

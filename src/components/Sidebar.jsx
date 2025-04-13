@@ -45,12 +45,17 @@ const MenuIcon = () => (
   </svg>
 );
 
-// ... [keep all your SVG icon components the same] ...
+// Main Logo Icon
+const NutritionLogo = () => (
+  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+    <path d="M18.06 22.99h1.66c.84 0 1.53-.64 1.63-1.46L23 5.05h-5V1h-1.97v4.05h-4.97l.3 2.34c1.71.47 3.31 1.32 4.27 2.26 1.44 1.42 2.43 2.89 2.43 5.29v8.05zM1 21.99V21h15.03v.99c0 .55-.45 1-1.01 1H2.01c-.56 0-1.01-.45-1.01-1zm15.03-7c0-8-15.03-8-15.03 0h15.03zM1.02 17h15v2h-15z"/>
+  </svg>
+);
 
 const Sidebar = ({ setSection }) => {
-  const [isOpen, setIsOpen] = useState(false); // Changed from 'open' to 'isOpen'
+  const [isOpen, setIsOpen] = useState(false);
 
-  const toggleSidebar = () => setIsOpen(!isOpen); // Updated to use setIsOpen
+  const toggleSidebar = () => setIsOpen(!isOpen);
 
   const handleSignOut = () => {
     const auth = getAuth();
@@ -83,7 +88,7 @@ const Sidebar = ({ setSection }) => {
 
       {/* Sidebar */}
       <div
-        className={`fixed top-0 left-0 h-screen z-40 bg-green-100 text-green-800 transition-transform duration-300 ease-in-out
+        className={`fixed top-0 left-0 h-screen z-40 bg-white text-gray-800 transition-transform duration-300 ease-in-out shadow-md
           ${isOpen ? "translate-x-0 w-64" : "-translate-x-full"}
           md:translate-x-0 md:w-64 md:sticky`}
       >
@@ -91,23 +96,23 @@ const Sidebar = ({ setSection }) => {
           {/* Top Section */}
           <div>
             {/* Logo */}
-            <div className="text-xl font-bold p-4">
-              <svg className="w-6 h-6 inline mr-2" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.31-8.86c-1.77-.45-2.34-.94-2.34-1.67 0-.84.79-1.43 2.1-1.43 1.38 0 1.9.66 1.94 1.64h1.71c-.05-1.34-.87-2.57-2.49-2.97V5H10.9v1.69c-1.51.32-2.72 1.3-2.72 2.81 0 1.79 1.49 2.69 3.66 3.21 1.95.46 2.34 1.15 2.34 1.87 0 .53-.39 1.39-2.1 1.39-1.6 0-2.23-.72-2.32-1.64H8.04c.1 1.7 1.36 2.66 2.86 2.97V19h2.34v-1.67c1.52-.29 2.72-1.16 2.73-2.77-.01-2.2-1.9-2.96-3.66-3.42z"/>
-              </svg>
-              NutriTrack
+            <div className="text-xl font-bold p-4 flex items-center">
+              <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center mr-3">
+                <NutritionLogo className="text-green-600" />
+              </div>
+              <span className="text-green-600">NutriTrack</span>
             </div>
             
             {/* Navigation Items */}
-            <div className="flex flex-col gap-4 mt-4">
+            <div className="flex flex-col gap-2 mt-4">
               {navItems.map((item) => (
                 <button
                   key={item.id}
                   onClick={() => {
                     setSection(item.id);
-                    setIsOpen(false); // Updated to use setIsOpen
+                    setIsOpen(false);
                   }}
-                  className="w-full text-left hover:bg-green-200 md:hover:translate-x-2 transition-all duration-300 p-3 rounded-lg cursor-pointer flex items-center gap-3"
+                  className="w-full text-left hover:bg-green-50 md:hover:translate-x-2 transition-all duration-300 p-3 rounded-lg cursor-pointer flex items-center gap-3"
                 >
                   <span className="text-green-600">{item.icon}</span>
                   <span>{item.label}</span>
@@ -120,7 +125,7 @@ const Sidebar = ({ setSection }) => {
           <div className="p-4">
             <button
               onClick={handleSignOut}
-              className="w-full flex items-center gap-3 p-3 rounded-lg bg-green-600 text-white hover:bg-green-700 transition-all"
+              className="w-full flex items-center gap-3 p-3 rounded-lg bg-green-600 text-white hover:bg-green-700 transition-all shadow-sm hover:shadow-md"
             >
               <LogOutIcon />
               <span>Sign Out</span>

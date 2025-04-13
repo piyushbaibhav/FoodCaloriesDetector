@@ -4,6 +4,27 @@ import { db } from "../firebase";
 
 const GEMINI_API_KEY = "AIzaSyA40OoIi5AEkJhyehzX_1hvXGlSAL-DEJE";
 
+// Food Icon Component
+const FoodIcon = () => (
+  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+    <path d="M18.06 22.99h1.66c.84 0 1.53-.64 1.63-1.46L23 5.05h-5V1h-1.97v4.05h-4.97l.3 2.34c1.71.47 3.31 1.32 4.27 2.26 1.44 1.42 2.43 2.89 2.43 5.29v8.05zM1 21.99V21h15.03v.99c0 .55-.45 1-1.01 1H2.01c-.56 0-1.01-.45-1.01-1zm15.03-7c0-8-15.03-8-15.03 0h15.03zM1.02 17h15v2h-15z"/>
+  </svg>
+);
+
+// Camera Icon Component
+const CameraIcon = () => (
+  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+    <path d="M12 12c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm6-1h-1V9c0-1.1-.9-2-2-2H9c-1.1 0-2 .9-2 2v2H6c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-6c0-1.1-.9-2-2-2zM9 9h6v2H9V9zm9 8H6v-4h12v4z"/>
+  </svg>
+);
+
+// Upload Icon Component
+const UploadIcon = () => (
+  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+    <path d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z"/>
+  </svg>
+);
+
 const FoodInput = () => {
   const [foodName, setFoodName] = useState("");
   const [quantity, setQuantity] = useState("");
@@ -103,99 +124,179 @@ Quantity: ${qty}
 
     setLoading(true);
 
-    const saveData = async (base64Image = "") => {
-      try {
-        const nutritionInfo = await getNutritionFromGemini(foodName, quantity);
-        setNutritionData(nutritionInfo);
-
-        await addDoc(collection(db, "foodEntries"), {
-          foodName,
-          quantity,
-          image: base64Image,
-          nutritionInfo,
-          timestamp: serverTimestamp(),
-        });
-
-        alert("Saved ✅");
-        setFoodName("");
-        setQuantity("");
-        setImage(null);
-      } catch (error) {
-        console.error("Error saving to Firestore:", error);
-        alert("Prediction or upload failed ❌");
-      } finally {
-        setLoading(false);
+    try {
+      let base64Image = "";
+      if (image) {
+        base64Image = await convertToBase64(image);
       }
-    };
 
-    if (image) {
-      const reader = new FileReader();
-      reader.onloadend = () => saveData(reader.result);
-      reader.readAsDataURL(image);
-    } else {
-      await saveData();
+      await saveData(base64Image);
+
+      // Get nutrition data
+      const nutritionInfo = await getNutritionFromGemini(foodName, quantity);
+      setNutritionData(nutritionInfo);
+
+      // Reset form
+      setFoodName("");
+      setQuantity("");
+      setImage(null);
+    } catch (error) {
+      console.error("Error:", error);
+      alert("An error occurred. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
+  const convertToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
+  const saveData = async (base64Image = "") => {
+    const username = localStorage.getItem("username") || "Anonymous";
+    const foodData = {
+      foodName,
+      quantity,
+      image: base64Image,
+      username,
+      timestamp: serverTimestamp(),
+    };
+
+    await addDoc(collection(db, "foodEntries"), foodData);
+  };
+
   return (
-    <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md flex flex-col gap-4">
-      <input
-        type="text"
-        placeholder="🍲 Enter food name"
-        className="input input-bordered w-full"
-        value={foodName}
-        onChange={(e) => setFoodName(e.target.value)}
-      />
-
-      <input
-        type="file"
-        accept="image/*"
-        onChange={handleImageChange}
-        className="file-input file-input-bordered w-full"
-      />
-
-      <button
-        onClick={startCamera}
-        className="bg-indigo-500 text-white py-2 rounded-xl hover:bg-indigo-600 transition-all"
-      >
-        📷 Capture from Camera
-      </button>
-
-      {cameraOn && (
-        <div className="flex flex-col items-center gap-2">
-          <video ref={videoRef} autoPlay className="w-full max-w-xs rounded-md border border-gray-300" />
-          <button
-            onClick={capturePhoto}
-            className="bg-green-500 text-white px-4 py-1 rounded-lg hover:bg-green-600"
-          >
-            📸 Take Photo
-          </button>
-          <canvas ref={canvasRef} width="300" height="200" hidden />
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Food Name Input */}
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-gray-700">
+            Food Name
+          </label>
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <FoodIcon className="text-green-600" />
+            </div>
+            <input
+              type="text"
+              value={foodName}
+              onChange={(e) => setFoodName(e.target.value)}
+              placeholder="Enter food name"
+              className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            />
+          </div>
         </div>
-      )}
 
-      <input
-        type="text"
-        placeholder="⚖️ Enter quantity (e.g., 100 grams)"
-        className="input input-bordered w-full"
-        value={quantity}
-        onChange={(e) => setQuantity(e.target.value)}
-      />
+        {/* Quantity Input */}
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-gray-700">
+            Quantity
+          </label>
+          <input
+            type="text"
+            value={quantity}
+            onChange={(e) => setQuantity(e.target.value)}
+            placeholder="e.g., 1 cup, 200g, 2 pieces"
+            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          />
+        </div>
+      </div>
 
+      {/* Image Upload Section */}
+      <div className="space-y-4">
+        <label className="block text-sm font-medium text-gray-700">
+          Food Image (Optional)
+        </label>
+        
+        <div className="flex flex-col md:flex-row gap-4">
+          {/* Camera Button */}
+          <button
+            type="button"
+            onClick={startCamera}
+            className="flex items-center justify-center gap-2 px-4 py-3 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-all duration-300 font-medium text-gray-700 shadow-sm"
+          >
+            <CameraIcon className="text-green-600" />
+            <span>Take Photo</span>
+          </button>
+          
+          {/* Upload Button */}
+          <label className="flex items-center justify-center gap-2 px-4 py-3 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-all duration-300 font-medium text-gray-700 shadow-sm cursor-pointer">
+            <UploadIcon className="text-green-600" />
+            <span>Upload Image</span>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              className="hidden"
+            />
+          </label>
+        </div>
+
+        {/* Camera Preview */}
+        {cameraOn && (
+          <div className="mt-4 space-y-4">
+            <video
+              ref={videoRef}
+              autoPlay
+              className="w-full max-w-md mx-auto rounded-lg border border-gray-200"
+            />
+            <canvas ref={canvasRef} className="hidden" width="300" height="200" />
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={capturePhoto}
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all duration-300"
+              >
+                Capture
+              </button>
+              <button
+                onClick={stopCamera}
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all duration-300"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Image Preview */}
+        {image && !cameraOn && (
+          <div className="mt-4">
+            <img
+              src={URL.createObjectURL(image)}
+              alt="Food"
+              className="w-full max-w-md mx-auto rounded-lg border border-gray-200"
+            />
+            <button
+              onClick={() => setImage(null)}
+              className="mt-2 px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-all duration-300"
+            >
+              Remove Image
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Submit Button */}
       <button
-        className={`${
-          loading ? "bg-gray-400" : "bg-rose-500 hover:bg-rose-600"
-        } text-white px-4 py-2 rounded-xl transition-all`}
         onClick={handleSubmit}
         disabled={loading}
+        className="w-full bg-green-600 text-white py-3 rounded-lg shadow-md hover:bg-green-700 hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-300 font-medium text-lg disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {loading ? "⏳ Predicting..." : "🔍 Predict & Get Nutrition Info"}
+        {loading ? "Processing..." : "Add Food Entry"}
       </button>
 
+      {/* Nutrition Data Display */}
       {nutritionData && (
-        <div className="mt-4 bg-green-100 text-green-800 p-3 rounded-xl text-left whitespace-pre-wrap">
-          🧪 <strong>Nutrition Info:</strong>  
-          <pre className="mt-1">{nutritionData}</pre>
+        <div className="mt-6 p-4 bg-green-50 rounded-lg border border-green-100">
+          <h3 className="text-lg font-medium text-green-800 mb-2">
+            Nutritional Information
+          </h3>
+          <pre className="whitespace-pre-wrap text-gray-700">{nutritionData}</pre>
         </div>
       )}
     </div>
