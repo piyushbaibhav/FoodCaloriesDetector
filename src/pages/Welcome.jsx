@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useState } from "react";
 
 // Nutrition-Focused SVG Icons
 const NutritionFactsIcon = () => (
@@ -42,7 +43,62 @@ const WaveVector = () => (
   </svg>
 );
 
+const FeatureCard = ({ icon, title, bg, text, description }) => {
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <div 
+      className={`${bg} p-5 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 h-40 relative overflow-hidden`}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <div className={`transition-all duration-300 ${isHovered ? 'opacity-0 -translate-y-full' : 'opacity-100 translate-y-0'}`}>
+        <div className={`${text} mb-3 flex justify-center`}>
+          {icon}
+        </div>
+        <h3 className="font-medium text-gray-700">{title}</h3>
+      </div>
+      <div className={`absolute inset-0 p-5 flex items-center justify-center transition-all duration-300 ${isHovered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-full'}`}>
+        <p className="text-sm text-center text-gray-600">
+          {description}
+        </p>
+      </div>
+    </div>
+  );
+};
+
 export default function Welcome() {
+  const features = [
+    { 
+      icon: <NutritionFactsIcon />, 
+      title: "Nutrition Facts", 
+      bg: "bg-green-50", 
+      text: "text-green-600",
+      description: "Get detailed nutritional information for all your meals and track your daily intake."
+    },
+    { 
+      icon: <ProgressIcon />, 
+      title: "Daily Progress", 
+      bg: "bg-blue-50", 
+      text: "text-blue-600",
+      description: "Monitor your progress towards health goals with intuitive charts and metrics."
+    },
+    { 
+      icon: <ImagePredictionIcon />, 
+      title: "Image Prediction", 
+      bg: "bg-purple-50", 
+      text: "text-purple-600",
+      description: "Simply take a photo of your meal and get instant nutritional analysis."
+    },
+    { 
+      icon: <FoodDatabaseIcon />, 
+      title: "Food Database", 
+      bg: "bg-amber-50", 
+      text: "text-amber-600",
+      description: "Access our comprehensive database of foods with accurate nutritional values."
+    }
+  ];
+
   return (
     <div className="min-h-screen flex flex-col justify-center items-center bg-[#f8fafc] text-gray-900 relative overflow-hidden">
       {/* Decorative SVG Vectors */}
@@ -84,20 +140,17 @@ export default function Welcome() {
           </Link>
         </div>
 
-        {/* App Features Preview */}
+        {/* App Features Preview with slide-up animation */}
         <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[
-            { icon: <NutritionFactsIcon />, title: "Nutrition Facts", bg: "bg-green-50", text: "text-green-600" },
-            { icon: <ProgressIcon />, title: "Daily Progress", bg: "bg-blue-50", text: "text-blue-600" },
-            { icon: <ImagePredictionIcon />, title: "Image Prediction", bg: "bg-purple-50", text: "text-purple-600" },
-            { icon: <FoodDatabaseIcon />, title: "Food Database", bg: "bg-amber-50", text: "text-amber-600" }
-          ].map((feature, index) => (
-            <div key={index} className={`${feature.bg} p-5 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300`}>
-              <div className={`${feature.text} mb-3 flex justify-center`}>
-                {feature.icon}
-              </div>
-              <h3 className="font-medium text-gray-700">{feature.title}</h3>
-            </div>
+          {features.map((feature, index) => (
+            <FeatureCard
+              key={index}
+              icon={feature.icon}
+              title={feature.title}
+              bg={feature.bg}
+              text={feature.text}
+              description={feature.description}
+            />
           ))}
         </div>
       </div>
