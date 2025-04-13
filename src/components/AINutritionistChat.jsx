@@ -1,0 +1,159 @@
+import React, { useState } from "react";
+
+const GEMINI_API_KEY = "AIzaSyA40OoIi5AEkJhyehzX_1hvXGlSAL-DEJE";
+
+// Chat Icon Component
+const ChatIcon = () => (
+  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+    <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
+  </svg>
+);
+
+// Send Icon Component
+const SendIcon = () => (
+  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+  </svg>
+);
+
+const AINutritionistChat = () => {
+  const [messages, setMessages] = useState([
+    {
+      role: "assistant",
+      content: "Hello! I'm your AI Nutritionist. How can I help you with your nutrition questions today?",
+    },
+  ]);
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const getNutritionistResponse = async (question) => {
+    const prompt = `
+You are a certified nutritionist and dietitian with expertise in sports nutrition, weight management, and general dietary advice.
+
+Given the user's question, provide a helpful, accurate, and concise response based on current nutritional science.
+
+Keep your response under 200 words and focus on practical advice.
+
+User question: ${question}
+`;
+
+    try {
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ role: "user", parts: [{ text: prompt }] }],
+          }),
+        }
+      );
+
+      const data = await response.json();
+      console.log("Gemini nutritionist response:", data);
+
+      const result = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+      return result || "I'm sorry, I couldn't process your question at this time.";
+    } catch (err) {
+      console.error("Error calling Gemini API:", err);
+      return "I'm sorry, there was an error processing your question.";
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!input.trim()) return;
+
+    const userMessage = input.trim();
+    setInput("");
+    setMessages((prev) => [...prev, { role: "user", content: userMessage }]);
+    setLoading(true);
+
+    try {
+      const response = await getNutritionistResponse(userMessage);
+      setMessages((prev) => [...prev, { role: "assistant", content: response }]);
+    } catch (error) {
+      console.error("Error getting response:", error);
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: "I'm sorry, there was an error processing your question." },
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="flex flex-col h-full">
+      <div className="p-6 pb-0">
+        <div className="flex items-center justify-center mb-6">
+          <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mr-3">
+            <ChatIcon className="text-green-600" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-800">
+            AI <span className="text-green-600">Nutritionist</span>
+          </h2>
+        </div>
+        <p className="text-gray-600 text-center mb-6">
+          Ask me anything about nutrition, diet, or meal planning!
+        </p>
+      </div>
+
+      <div className="flex-1 overflow-y-auto px-6 pb-6" style={{ maxHeight: 'calc(100vh - 300px)' }}>
+        <div className="space-y-4">
+          {messages.map((message, index) => (
+            <div
+              key={index}
+              className={`flex ${
+                message.role === "user" ? "justify-end" : "justify-start"
+              }`}
+            >
+              <div
+                className={`max-w-[80%] p-4 rounded-lg ${
+                  message.role === "user"
+                    ? "bg-green-600 text-white"
+                    : "bg-gray-100 text-gray-800"
+                }`}
+              >
+                <p className="whitespace-pre-wrap">{message.content}</p>
+              </div>
+            </div>
+          ))}
+          {loading && (
+            <div className="flex justify-start">
+              <div className="bg-gray-100 text-gray-800 p-4 rounded-lg max-w-[80%]">
+                <div className="flex space-x-2">
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.4s" }}></div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="p-6 pt-0">
+        <form onSubmit={handleSubmit} className="flex items-center gap-2">
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Ask a nutrition question..."
+            className="flex-1 px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            disabled={loading}
+          />
+          <button
+            type="submit"
+            disabled={loading || !input.trim()}
+            className="bg-green-600 text-white p-3 rounded-lg hover:bg-green-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <SendIcon />
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+export default AINutritionistChat; 
