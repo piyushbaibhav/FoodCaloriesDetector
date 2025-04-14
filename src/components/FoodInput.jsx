@@ -81,7 +81,9 @@ const FoodInput = () => {
     const prompt = `
 You are a certified dietitian and nutritionist.
 
-Given the food item and its specific quantity, return the accurate nutritional breakdown based on standard global nutritional databases (like USDA).
+Given the food item and its specific quantity, provide the nutritional breakdown based on standard global nutritional databases (like USDA) and common recipes.
+
+For complex dishes (like curries, mixed dishes, or restaurant-style foods), provide approximate values based on typical/common recipes and ingredients. If exact values aren't available, estimate based on similar dishes or main ingredients.
 
 ⚠️ Only respond in the **exact format** below and based on the **given quantity**.
 
@@ -94,6 +96,8 @@ Fiber: __ g
 
 Food: ${food}  
 Quantity: ${qty}
+
+Note: For complex dishes, provide approximate values based on typical recipes and main ingredients.
 `;
 
     try {
