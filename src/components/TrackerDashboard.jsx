@@ -7,6 +7,7 @@ import dayjs from 'dayjs';
 const TrackerDashboard = () => {
   const [heatMapData, setHeatMapData] = useState([]);
   const [streak, setStreak] = useState(0);
+  const [monthlyStats, setMonthlyStats] = useState([]);
   const auth = getAuth();
 
   useEffect(() => {
@@ -55,10 +56,10 @@ const TrackerDashboard = () => {
 
         setStreak(currentStreak);
 
-        // Generate heat map data for the last year
+        // Generate heat map data
         const heatMap = [];
         const today = dayjs();
-        const weeks = 52; // 52 weeks in a year
+        const weeks = 52;
         
         for (let week = 0; week < weeks; week++) {
           const weekData = [];
@@ -79,6 +80,41 @@ const TrackerDashboard = () => {
         }
 
         setHeatMapData(heatMap);
+
+        // Calculate monthly statistics
+        const stats = [];
+        const currentMonth = dayjs().month();
+        
+        for (let i = 0; i < 6; i++) {
+          const month = currentMonth - i;
+          const year = dayjs().year() - (month < 0 ? 1 : 0);
+          const adjustedMonth = ((month % 12) + 12) % 12;
+          
+          const startOfMonth = dayjs().year(year).month(adjustedMonth).startOf('month');
+          const endOfMonth = dayjs().year(year).month(adjustedMonth).endOf('month');
+          
+          const monthEntries = entries.filter(entry => {
+            const entryDate = dayjs(entry.timestamp);
+            return entryDate.isAfter(startOfMonth) && entryDate.isBefore(endOfMonth);
+          });
+
+          const daysInMonth = endOfMonth.diff(startOfMonth, 'day') + 1;
+          const daysWithEntries = new Set(
+            monthEntries.map(entry => dayjs(entry.timestamp).format('YYYY-MM-DD'))
+          ).size;
+
+          stats.push({
+            month: startOfMonth.format('MMM YYYY'),
+            totalEntries: monthEntries.length,
+            daysLogged: daysWithEntries,
+            completionRate: Math.round((daysWithEntries / daysInMonth) * 100),
+            averageEntries: monthEntries.length > 0 
+              ? Math.round((monthEntries.length / daysWithEntries) * 10) / 10 
+              : 0
+          });
+        }
+
+        setMonthlyStats(stats);
       } catch (error) {
         console.error('Error fetching food log:', error);
       }
@@ -95,7 +131,6 @@ const TrackerDashboard = () => {
     return 'bg-green-800';
   };
 
-  // Get month labels for the grid
   const getMonthLabels = () => {
     const labels = [];
     const today = dayjs();
@@ -104,6 +139,28 @@ const TrackerDashboard = () => {
       labels.push(date.format('MMM'));
     }
     return labels.reverse();
+  };
+
+  const getTrendIndicator = (current, previous) => {
+    if (current > previous) {
+      return (
+        <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+        </svg>
+      );
+    }
+    if (current < previous) {
+      return (
+        <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 17h8m0 0v-8m0 8l-8-8-4 4-6-6" />
+        </svg>
+      );
+    }
+    return (
+      <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 12h16" />
+      </svg>
+    );
   };
 
   return (
@@ -121,7 +178,7 @@ const TrackerDashboard = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
           <div className="flex items-center gap-4 mb-6">
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 bg-gray-100 rounded"></div>
@@ -147,7 +204,6 @@ const TrackerDashboard = () => {
 
           <div className="overflow-x-auto">
             <div className="flex gap-1 min-w-max">
-              {/* Weekday labels */}
               <div className="flex flex-col gap-1 mr-2">
                 <div className="h-4"></div>
                 {['Mon', 'Wed', 'Fri'].map((day) => (
@@ -157,7 +213,6 @@ const TrackerDashboard = () => {
                 ))}
               </div>
 
-              {/* Heatmap grid */}
               <div className="flex gap-1">
                 {heatMapData.map((week, weekIndex) => (
                   <div key={weekIndex} className="flex flex-col gap-1">
@@ -173,10 +228,48 @@ const TrackerDashboard = () => {
               </div>
             </div>
 
-            {/* Month labels */}
             <div className="flex justify-between mt-2 text-xs text-gray-500 min-w-max">
               {getMonthLabels().map((month, index) => (
                 <span key={index} className="w-16 text-center">{month}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Monthly Comparison Section */}
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <h2 className="text-xl font-semibold text-gray-800 mb-4">Monthly Comparison</h2>
+          <div className="overflow-x-auto">
+            <div className="flex gap-4 min-w-max pb-2">
+              {monthlyStats.map((stat, index) => (
+                <div key={index} className="bg-gray-50 rounded-lg p-4 w-64 flex-shrink-0">
+                  <div className="flex justify-between items-center mb-2">
+                    <h3 className="font-medium text-gray-800">{stat.month}</h3>
+                    {index > 0 && (
+                      <span className="text-sm">
+                        {getTrendIndicator(stat.totalEntries, monthlyStats[index - 1].totalEntries)}
+                      </span>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Total Entries:</span>
+                      <span className="font-medium">{stat.totalEntries}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Days Logged:</span>
+                      <span className="font-medium">{stat.daysLogged}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Completion Rate:</span>
+                      <span className="font-medium">{stat.completionRate}%</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Avg. Entries/Day:</span>
+                      <span className="font-medium">{stat.averageEntries}</span>
+                    </div>
+                  </div>
+                </div>
               ))}
             </div>
           </div>

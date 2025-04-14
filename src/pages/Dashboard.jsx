@@ -149,7 +149,7 @@ const Dashboard = () => {
       </div>
       
       <Sidebar setSection={setSection} />
-      <main className="flex flex-col items-center w-full ml-0 md:ml-20 lg:ml-64 p-4 md:p-8 transition-all duration-300 z-10">
+      <main className="flex flex-col items-center w-full ml-0 md:ml-64 p-4 md:p-6 transition-all duration-300 z-10">
         {renderSection()}
       </main>
     </div>
