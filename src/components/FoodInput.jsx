@@ -67,10 +67,13 @@ const FoodInput = () => {
     const canvas = canvasRef.current;
     const context = canvas.getContext("2d");
     context.drawImage(video, 0, 0, 300, 200);
+    
+    // Convert canvas to blob and create a file
     canvas.toBlob((blob) => {
       const file = new File([blob], "captured.jpg", { type: "image/jpeg" });
       setImage(file);
-    }, "image/jpeg");
+      console.log("Captured image:", file); // Debug log
+    }, "image/jpeg", 0.95);
     stopCamera();
   };
 
@@ -125,19 +128,46 @@ Quantity: ${qty}
     setLoading(true);
 
     try {
-      let base64Image = "";
+      let foodClass = foodName;
+      let confidence = 1.0;
+      let geminiInfo = "No nutritional information available";
+
+      // If image is provided, send it to Flask backend for classification
       if (image) {
-        base64Image = await convertToBase64(image);
+        const formData = new FormData();
+        formData.append('file', image);
+
+        const response = await fetch('http://localhost:5000/predict?include_gemini=true', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to classify image');
+        }
+
+        const data = await response.json();
+        foodClass = data.class; // Get the detected food class
+        setFoodName(foodClass); // Set the food name input to the detected class
+        confidence = data.confidence;
+        
+        // Use getNutritionFromGemini instead of backend's gemini_info
+        geminiInfo = await getNutritionFromGemini(foodClass, quantity);
+      } else {
+        // If no image, use the entered food name
+        foodClass = foodName;
+        // Use getNutritionFromGemini for text input as well
+        geminiInfo = await getNutritionFromGemini(foodClass, quantity);
       }
 
-      await saveData(base64Image);
+      // Set the nutrition data
+      setNutritionData(geminiInfo);
 
-      // Get nutrition data
-      const nutritionInfo = await getNutritionFromGemini(foodName, quantity);
-      setNutritionData(nutritionInfo);
+      // Save to Firebase
+      const base64Image = image ? await convertToBase64(image) : "";
+      await saveData(base64Image, foodClass, confidence, geminiInfo);
 
       // Reset form
-      setFoodName("");
       setQuantity("");
       setImage(null);
     } catch (error) {
@@ -157,17 +187,17 @@ Quantity: ${qty}
     });
   };
 
-  const saveData = async (base64Image = "") => {
+  const saveData = async (base64Image = "", foodClass, confidence, nutritionInfo) => {
     const username = localStorage.getItem("username") || "Anonymous";
-    const nutritionInfo = await getNutritionFromGemini(foodName, quantity);
     
     const foodData = {
-      foodName,
+      foodName: foodClass,
       quantity,
       image: base64Image,
       username,
       timestamp: serverTimestamp(),
-      nutritionInfo,
+      nutritionInfo: nutritionInfo || "No nutritional information available",
+      confidence: confidence
     };
 
     await addDoc(collection(db, "foodEntries"), foodData);
