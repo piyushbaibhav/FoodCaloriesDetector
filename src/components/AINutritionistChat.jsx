@@ -1,4 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { collection, query, orderBy, getDocs, doc } from "firebase/firestore";
+import { db } from "../firebase";
+import { getAuth } from "firebase/auth";
+import dayjs from "dayjs";
 
 const GEMINI_API_KEY = "AIzaSyA40OoIi5AEkJhyehzX_1hvXGlSAL-DEJE";
 
@@ -20,21 +24,76 @@ const AINutritionistChat = () => {
   const [messages, setMessages] = useState([
     {
       role: "assistant",
-      content: "Hello! I'm your AI Nutritionist. How can I help you with your nutrition questions today?",
+      content: "Hello! I'm your AI Nutritionist. I can help you with nutrition questions and provide personalized advice based on your food log. How can I help you today?",
     },
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [foodLog, setFoodLog] = useState([]);
+  const auth = getAuth();
+
+  useEffect(() => {
+    const fetchFoodLog = async () => {
+      try {
+        const userId = auth.currentUser?.uid;
+        if (!userId) return;
+
+        const userRef = doc(db, "users", userId);
+        const foodEntriesRef = collection(userRef, "foodEntries");
+        const q = query(foodEntriesRef, orderBy("timestamp", "desc"));
+        
+        const querySnapshot = await getDocs(q);
+        const entries = [];
+        
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          entries.push({
+            ...data,
+            timestamp: data.timestamp?.toDate()
+          });
+        });
+
+        setFoodLog(entries);
+      } catch (error) {
+        console.error('Error fetching food log:', error);
+      }
+    };
+
+    fetchFoodLog();
+  }, [auth.currentUser]);
 
   const getNutritionistResponse = async (question) => {
+    // Format food log data for context
+    const foodLogContext = foodLog
+      .filter(entry => dayjs(entry.timestamp).isAfter(dayjs().subtract(7, 'day')))
+      .map(entry => ({
+        food: entry.foodName,
+        quantity: entry.quantity,
+        date: dayjs(entry.timestamp).format('MMM D, YYYY'),
+        nutrition: entry.nutritionInfo
+      }))
+      .slice(0, 10); // Limit to last 10 entries
+
     const prompt = `
 You are a certified nutritionist and dietitian with expertise in sports nutrition, weight management, and general dietary advice.
 
-Given the user's question, provide a helpful, accurate, and concise response based on current nutritional science.
+Given the user's question and their recent food log data, provide a helpful, accurate, and personalized response based on current nutritional science.
+
+User's recent food log (last 7 days):
+${JSON.stringify(foodLogContext, null, 2)}
+
+Format your response with:
+1. A clear, direct answer to the question
+2. Key points in **bold**
+3. Practical recommendations based on their food log
+4. Scientific backing where relevant
+5. Specific suggestions considering their recent eating patterns
 
 Keep your response under 200 words and focus on practical advice.
 
 User question: ${question}
+
+Note: Use markdown formatting for **bold** text to emphasize key points.
 `;
 
     try {
@@ -115,7 +174,15 @@ User question: ${question}
                     : "bg-gray-100 text-gray-800"
                 }`}
               >
-                <p className="whitespace-pre-wrap">{message.content}</p>
+                <div className="prose prose-sm max-w-none">
+                  {message.role === "assistant" ? (
+                    <div dangerouslySetInnerHTML={{ 
+                      __html: message.content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    }} />
+                  ) : (
+                    <p>{message.content}</p>
+                  )}
+                </div>
               </div>
             </div>
           ))}
