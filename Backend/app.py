@@ -1,26 +1,24 @@
+
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import numpy as np
-import onnxruntime as ort
+import torch
+import torchvision.models as models
+import os
 from PIL import Image
+from torchvision import transforms
 import io
 import json
-import google.generativeai as genai
-import os
 from dotenv import load_dotenv
+import google.generativeai as genai
 
 # Load environment variables from .env file
 load_dotenv()
 
 app = Flask(__name__)
+
 # Configure CORS with specific settings
-CORS(app, resources={
-    r"/predict": {
-        "origins": ["http://localhost:3000"],
-        "methods": ["POST", "OPTIONS"],
-        "allow_headers": ["Content-Type"]
-    }
-})
+CORS(app, resources={r"/predict": {"origins": ["http://localhost:3000"], "methods": ["POST", "OPTIONS"], "allow_headers": ["Content-Type"]}})
 
 # Load class mapping from JSON file
 with open('class_mapping.json', 'r') as f:
@@ -28,28 +26,47 @@ with open('class_mapping.json', 'r') as f:
     # Convert numeric keys to list of class names
     class_names = [class_mapping[str(i)] for i in range(len(class_mapping))]
 
-# Load ONNX model once
-session = ort.InferenceSession("models/mobilenetv2_food.onnx")
-input_name = session.get_inputs()[0].name
+# Load PyTorch model once
+model = models.mobilenet_v2(pretrained=False)
 
-# Configure Gemini
+# Modify the final classifier layer to match the number of output classes in your model
+num_classes = 339  # Replace this with the number of classes your model was trained on
+model.classifier[1] = torch.nn.Linear(model.classifier[1].in_features, num_classes)
+
+# Load the saved weights
+state_dict = torch.load('models/mobilenetv2_epoch_100.pth', map_location=torch.device('cpu'))
+
+# Remove 'module.' prefix if present
+state_dict = {key.replace('module.', ''): value for key, value in state_dict.items()}
+
+# Load the cleaned state_dict into the model
+model.load_state_dict(state_dict)
+model.eval()  # Set the model to evaluation mode
+
+# Configure Gemini API
 GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY')
 if not GOOGLE_API_KEY:
     raise ValueError("GOOGLE_API_KEY environment variable is not set. Please add it to your .env file.")
 genai.configure(api_key=GOOGLE_API_KEY)
-model = genai.GenerativeModel('gemini-1.0-pro')
+gemini_model = genai.GenerativeModel('gemini-1.0-pro')
 
-def preprocess_image(image_bytes):
-    img = Image.open(io.BytesIO(image_bytes))
-    img = img.resize((224, 224))  # Adjust to your model's expected input
-    img_array = np.array(img).astype(np.float32) / 255.0
-    img_array = np.transpose(img_array, (2, 0, 1))  # HWC to CHW
-    return np.expand_dims(img_array, axis=0)  # Add batch dimension
+def preprocess_image(img_bytes):
+    image = Image.open(io.BytesIO(img_bytes))  # Load image from bytes
+    # Define the necessary transformations
+    transform = transforms.Compose([
+        transforms.Resize((224, 224)),  # Resize to match MobileNetV2 input size
+        transforms.ToTensor(),  # Convert the image to a tensor
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),  # Normalize based on ImageNet stats
+    ])
+    
+    # Apply the transformations
+    image_tensor = transform(image).unsqueeze(0)  # Add batch dimension
+    return image_tensor
 
 def get_gemini_response(food_class):
     prompt = f"Tell me about the nutritional information and health benefits of {food_class}. Keep it concise and focus on key nutrients and health benefits."
     try:
-        response = model.generate_content(prompt)
+        response = gemini_model.generate_content(prompt)
         return response.text
     except Exception as e:
         print(f"Gemini API Error: {str(e)}")  # Debug print
@@ -59,7 +76,7 @@ def get_gemini_response(food_class):
 def predict():
     if request.method == 'OPTIONS':
         return '', 200
-        
+
     try:
         food_class = None
         confidence = 1.0
@@ -70,15 +87,18 @@ def predict():
             file = request.files['file']
             if file.filename == '':
                 return jsonify({"error": "No file selected"}), 400
-                
-            img_bytes = file.read()
+
+            img_bytes = file.read()  # Read the image as bytes
             
             # Preprocess and predict
             input_data = preprocess_image(img_bytes)
-            outputs = session.run(None, {input_name: input_data})
-            pred_idx = np.argmax(outputs[0])
-            food_class = class_names[pred_idx]
-            confidence = float(outputs[0][0][pred_idx])
+            with torch.no_grad():
+                outputs = model(input_data)
+            
+            # Get the predicted class (index of maximum probability)
+            _, pred_idx = torch.max(outputs, 1)
+            food_class = class_names[pred_idx.item()]
+            confidence = torch.softmax(outputs, dim=1)[0][pred_idx].item()
         else:
             # If no file, check for food_class in JSON body
             data = request.get_json()
