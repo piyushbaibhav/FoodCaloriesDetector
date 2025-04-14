@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { collection, getDocs, query, orderBy } from "firebase/firestore";
+import { collection, getDocs, query, orderBy, doc } from "firebase/firestore";
 import { db } from "../../firebase";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import dayjs from "dayjs";
+import { getAuth } from "firebase/auth";
 
 // Chart Icon Component
 const PieChartIcon = () => (
@@ -39,6 +40,7 @@ const NutritionPieChart = () => {
     carbs: 0,
     fiber: 0,
   });
+  const auth = getAuth();
 
   const extractNutrients = (nutritionInfo) => {
     if (!nutritionInfo || typeof nutritionInfo !== "string") {
@@ -64,47 +66,53 @@ const NutritionPieChart = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const q = query(
-        collection(db, "foodEntries"),
-        orderBy("timestamp", "desc")
-      );
-      const querySnapshot = await getDocs(q);
+      try {
+        const userId = auth.currentUser?.uid;
+        if (!userId) return;
 
-      let totalNutrients = {
-        calories: 0,
-        protein: 0,
-        fat: 0,
-        carbs: 0,
-        fiber: 0,
-      };
+        const userRef = doc(db, "users", userId);
+        const foodEntriesRef = collection(userRef, "foodEntries");
+        const q = query(foodEntriesRef, orderBy("timestamp", "desc"));
+        const querySnapshot = await getDocs(q);
 
-      const today = dayjs().startOf("day");
+        let totalNutrients = {
+          calories: 0,
+          protein: 0,
+          fat: 0,
+          carbs: 0,
+          fiber: 0,
+        };
 
-      querySnapshot.forEach((doc) => {
-        const data = doc.data();
-        const timestamp = data.timestamp?.toDate?.(); // convert Firestore timestamp
+        const today = dayjs().startOf("day");
 
-        if (timestamp && dayjs(timestamp).isAfter(today)) {
-          const nutrition = extractNutrients(data.nutritionInfo);
-          totalNutrients.calories += nutrition.calories;
-          totalNutrients.protein += nutrition.protein;
-          totalNutrients.fat += nutrition.fat;
-          totalNutrients.carbs += nutrition.carbs;
-          totalNutrients.fiber += nutrition.fiber;
-        }
-      });
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          const timestamp = data.timestamp?.toDate?.(); // convert Firestore timestamp
 
-      setNutrientData({
-        calories: Number(totalNutrients.calories.toFixed(1)),
-        protein: Number(totalNutrients.protein.toFixed(1)),
-        fat: Number(totalNutrients.fat.toFixed(1)),
-        carbs: Number(totalNutrients.carbs.toFixed(1)),
-        fiber: Number(totalNutrients.fiber.toFixed(1)),
-      });
+          if (timestamp && dayjs(timestamp).isAfter(today)) {
+            const nutrition = extractNutrients(data.nutritionInfo);
+            totalNutrients.calories += nutrition.calories;
+            totalNutrients.protein += nutrition.protein;
+            totalNutrients.fat += nutrition.fat;
+            totalNutrients.carbs += nutrition.carbs;
+            totalNutrients.fiber += nutrition.fiber;
+          }
+        });
+
+        setNutrientData({
+          calories: Number(totalNutrients.calories.toFixed(1)),
+          protein: Number(totalNutrients.protein.toFixed(1)),
+          fat: Number(totalNutrients.fat.toFixed(1)),
+          carbs: Number(totalNutrients.carbs.toFixed(1)),
+          fiber: Number(totalNutrients.fiber.toFixed(1)),
+        });
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
     };
 
     fetchData();
-  }, []);
+  }, [auth.currentUser]);
 
   const chartData = [
     { name: "Calories", value: nutrientData.calories },

@@ -38,6 +38,7 @@ export default function Login() {
       const userData = userDoc.data();
 
       localStorage.setItem("username", userData.name);
+      localStorage.setItem("userId", user.uid);
       navigate("/dashboard");
     } catch (error) {
       alert("Login failed: " + error.message);
@@ -52,6 +53,7 @@ export default function Login() {
       const userData = userDoc.exists() ? userDoc.data() : { name: user.displayName };
 
       localStorage.setItem("username", userData.name || "User");
+      localStorage.setItem("userId", user.uid);
       navigate("/dashboard");
     } catch (error) {
       alert("Google Login failed: " + error.message);

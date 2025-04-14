@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { collection, query, orderBy, getDocs } from 'firebase/firestore';
+import { collection, query, orderBy, getDocs, doc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { getAuth } from 'firebase/auth';
 import dayjs from 'dayjs';
@@ -37,10 +37,10 @@ const FoodLog = () => {
         const userId = auth.currentUser?.uid;
         if (!userId) return;
 
-        const q = query(
-          collection(db, "foodEntries"),
-          orderBy("timestamp", "desc")
-        );
+        // Query the user's foodEntries subcollection
+        const userRef = doc(db, "users", userId);
+        const foodEntriesRef = collection(userRef, "foodEntries");
+        const q = query(foodEntriesRef, orderBy("timestamp", "desc"));
         
         const querySnapshot = await getDocs(q);
         const entries = [];
@@ -118,7 +118,7 @@ const FoodLog = () => {
                           {entry.nutrition.calories} calories
                         </p>
                         <p className="text-sm text-gray-600">
-                          {entry.servingSize} {entry.servingUnit}
+                          {entry.quantity}
                         </p>
                       </div>
                     </div>

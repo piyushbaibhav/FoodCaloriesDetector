@@ -69,48 +69,52 @@ const NutrientProgress = () => {
     );
 
     const fetchData = async () => {
-      const q = query(
-        collection(db, "foodEntries"),
-        orderBy("timestamp", "desc")
-      );
-      const querySnapshot = await getDocs(q);
+      try {
+        const userRef = doc(db, "users", user.uid);
+        const foodEntriesRef = collection(userRef, "foodEntries");
+        const q = query(foodEntriesRef, orderBy("timestamp", "desc"));
+        const querySnapshot = await getDocs(q);
 
-      let totalNutrients = {
-        calories: 0,
-        protein: 0,
-        fat: 0,
-        carbs: 0,
-        fiber: 0,
-      };
+        let totalNutrients = {
+          calories: 0,
+          protein: 0,
+          fat: 0,
+          carbs: 0,
+          fiber: 0,
+        };
 
-      const today = dayjs().startOf("day");
+        const today = dayjs().startOf("day");
 
-      querySnapshot.forEach((doc) => {
-        const data = doc.data();
-        const timestamp = data.timestamp?.toDate?.();
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          const timestamp = data.timestamp?.toDate?.();
 
-        if (timestamp && dayjs(timestamp).isAfter(today)) {
-          const nutrition = extractNutrients(data.nutritionInfo);
-          totalNutrients.calories += nutrition.calories;
-          totalNutrients.protein += nutrition.protein;
-          totalNutrients.fat += nutrition.fat;
-          totalNutrients.carbs += nutrition.carbs;
-          totalNutrients.fiber += nutrition.fiber;
-        }
-      });
+          if (timestamp && dayjs(timestamp).isAfter(today)) {
+            const nutrition = extractNutrients(data.nutritionInfo);
+            totalNutrients.calories += nutrition.calories;
+            totalNutrients.protein += nutrition.protein;
+            totalNutrients.fat += nutrition.fat;
+            totalNutrients.carbs += nutrition.carbs;
+            totalNutrients.fiber += nutrition.fiber;
+          }
+        });
 
-      setNutrientData({
-        calories: Number(totalNutrients.calories.toFixed(1)),
-        protein: Number(totalNutrients.protein.toFixed(1)),
-        fat: Number(totalNutrients.fat.toFixed(1)),
-        carbs: Number(totalNutrients.carbs.toFixed(1)),
-        fiber: Number(totalNutrients.fiber.toFixed(1)),
-      });
+        setNutrientData({
+          calories: Number(totalNutrients.calories.toFixed(1)),
+          protein: Number(totalNutrients.protein.toFixed(1)),
+          fat: Number(totalNutrients.fat.toFixed(1)),
+          carbs: Number(totalNutrients.carbs.toFixed(1)),
+          fiber: Number(totalNutrients.fiber.toFixed(1)),
+        });
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
     };
 
     fetchData();
 
-    const foodEntriesRef = collection(db, "foodEntries");
+    const userRef = doc(db, "users", user.uid);
+    const foodEntriesRef = collection(userRef, "foodEntries");
     const q = query(
       foodEntriesRef,
       orderBy("timestamp", "desc")

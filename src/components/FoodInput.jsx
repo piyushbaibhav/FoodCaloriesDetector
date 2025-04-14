@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { collection, addDoc, serverTimestamp, doc } from "firebase/firestore";
 import { db } from "../firebase";
 
 const GEMINI_API_KEY = "AIzaSyA40OoIi5AEkJhyehzX_1hvXGlSAL-DEJE";
@@ -150,16 +150,11 @@ Quantity: ${qty}
         foodClass = data.class; // Get the detected food class
         setFoodName(foodClass); // Set the food name input to the detected class
         confidence = data.confidence;
-        
-        // Use getNutritionFromGemini instead of backend's gemini_info
-        geminiInfo = await getNutritionFromGemini(foodClass, quantity);
-      } else {
-        // If no image, use the entered food name
-        foodClass = foodName;
-        // Use getNutritionFromGemini for text input as well
-        geminiInfo = await getNutritionFromGemini(foodClass, quantity);
       }
 
+      // Get nutrition information from Gemini
+      geminiInfo = await getNutritionFromGemini(foodClass, quantity);
+      
       // Set the nutrition data
       setNutritionData(geminiInfo);
 
@@ -170,6 +165,7 @@ Quantity: ${qty}
       // Reset form
       setQuantity("");
       setImage(null);
+      setFoodName("");
     } catch (error) {
       console.error("Error:", error);
       alert("An error occurred. Please try again.");
@@ -189,18 +185,34 @@ Quantity: ${qty}
 
   const saveData = async (base64Image = "", foodClass, confidence, nutritionInfo) => {
     const username = localStorage.getItem("username") || "Anonymous";
+    const userId = localStorage.getItem("userId"); // Get the current user's ID
     
     const foodData = {
       foodName: foodClass,
       quantity,
       image: base64Image,
       username,
+      userId, // Add the user's ID
       timestamp: serverTimestamp(),
       nutritionInfo: nutritionInfo || "No nutritional information available",
       confidence: confidence
     };
 
-    await addDoc(collection(db, "foodEntries"), foodData);
+    try {
+      // Save to the user's subcollection
+      if (userId) {
+        const userRef = doc(db, "users", userId);
+        const foodEntriesRef = collection(userRef, "foodEntries");
+        await addDoc(foodEntriesRef, foodData);
+        console.log("Food entry saved to user's subcollection");
+      } else {
+        console.error("No user ID found");
+        throw new Error("User not authenticated");
+      }
+    } catch (error) {
+      console.error("Error saving food entry:", error);
+      throw error;
+    }
   };
 
   return (

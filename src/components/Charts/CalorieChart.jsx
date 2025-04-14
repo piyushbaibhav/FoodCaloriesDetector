@@ -5,6 +5,7 @@ import {
   query,
   orderBy,
   where,
+  doc,
 } from "firebase/firestore";
 import { db } from "../../firebase";
 import {
@@ -22,6 +23,7 @@ import {
   Line,
 } from "recharts";
 import dayjs from "dayjs";
+import { getAuth } from "firebase/auth";
 
 // Chart Icon Component
 const ChartIcon = () => (
@@ -58,6 +60,7 @@ const CalorieChart = () => {
   const [chartData, setChartData] = useState([]);
   const [selectedNutrient, setSelectedNutrient] = useState("calories");
   const [chartType, setChartType] = useState("bar");
+  const auth = getAuth();
 
   const extractNutrients = (nutritionInfo) => {
     if (!nutritionInfo || typeof nutritionInfo !== "string") {
@@ -83,89 +86,99 @@ const CalorieChart = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      let fromDate = new Date();
+      try {
+        const userId = auth.currentUser?.uid;
+        if (!userId) return;
 
-      if (filter === "7days") {
-        fromDate = dayjs().subtract(7, "day").toDate();
-      } else if (filter === "30days") {
-        fromDate = dayjs().subtract(30, "day").toDate();
-      } else {
-        fromDate.setHours(0, 0, 0, 0); // Start of today
-      }
+        let fromDate = new Date();
 
-      const q = query(
-        collection(db, "foodEntries"),
-        where("timestamp", ">=", fromDate),
-        orderBy("timestamp", "desc")
-      );
-
-      const querySnapshot = await getDocs(q);
-      const foods = [];
-      let total = 0;
-      const chartTemp = {};
-
-      querySnapshot.forEach((doc) => {
-        const data = doc.data();
-        const nutrition = extractNutrients(data.nutritionInfo);
-
-        let nutrientValue = 0;
-        switch (selectedNutrient) {
-          case "calories":
-            nutrientValue = nutrition.calories;
-            break;
-          case "protein":
-            nutrientValue = nutrition.protein;
-            break;
-          case "fat":
-            nutrientValue = nutrition.fat;
-            break;
-          case "carbs":
-            nutrientValue = nutrition.carbs;
-            break;
-          case "fiber":
-            nutrientValue = nutrition.fiber;
-            break;
-          default:
-            nutrientValue = nutrition.calories;
+        if (filter === "7days") {
+          fromDate = dayjs().subtract(7, "day").toDate();
+        } else if (filter === "30days") {
+          fromDate = dayjs().subtract(30, "day").toDate();
+        } else {
+          fromDate.setHours(0, 0, 0, 0); // Start of today
         }
 
-        total += nutrientValue;
+        // Query the user's foodEntries subcollection
+        const userRef = doc(db, "users", userId);
+        const foodEntriesRef = collection(userRef, "foodEntries");
+        const q = query(
+          foodEntriesRef,
+          where("timestamp", ">=", fromDate),
+          orderBy("timestamp", "desc")
+        );
 
-        const dateKey = dayjs(data.timestamp.toDate()).format("MM/DD/YYYY");
+        const querySnapshot = await getDocs(q);
+        const foods = [];
+        let total = 0;
+        const chartTemp = {};
 
-        if (!chartTemp[dateKey]) {
-          chartTemp[dateKey] = {
-            date: dateKey,
-            calories: 0,
-            protein: 0,
-            fat: 0,
-            carbs: 0,
-            fiber: 0,
-          };
-        }
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          const nutrition = extractNutrients(data.nutritionInfo);
 
-        chartTemp[dateKey][selectedNutrient] += nutrientValue;
-        foods.push({
-          ...data,
-          id: doc.id,
-          nutrition,
+          let nutrientValue = 0;
+          switch (selectedNutrient) {
+            case "calories":
+              nutrientValue = nutrition.calories;
+              break;
+            case "protein":
+              nutrientValue = nutrition.protein;
+              break;
+            case "fat":
+              nutrientValue = nutrition.fat;
+              break;
+            case "carbs":
+              nutrientValue = nutrition.carbs;
+              break;
+            case "fiber":
+              nutrientValue = nutrition.fiber;
+              break;
+            default:
+              nutrientValue = nutrition.calories;
+          }
+
+          total += nutrientValue;
+
+          const dateKey = dayjs(data.timestamp.toDate()).format("MM/DD/YYYY");
+
+          if (!chartTemp[dateKey]) {
+            chartTemp[dateKey] = {
+              date: dateKey,
+              calories: 0,
+              protein: 0,
+              fat: 0,
+              carbs: 0,
+              fiber: 0,
+            };
+          }
+
+          chartTemp[dateKey][selectedNutrient] += nutrientValue;
+          foods.push({
+            ...data,
+            id: doc.id,
+            nutrition,
+          });
         });
-      });
 
-      // Convert chartTemp to array and sort by date
-      const chartDataArray = Object.values(chartTemp).sort((a, b) => {
-        const dateA = dayjs(a.date, "MM/DD/YYYY");
-        const dateB = dayjs(b.date, "MM/DD/YYYY");
-        return dateA.isBefore(dateB) ? -1 : 1;
-      });
+        // Convert chartTemp to array and sort by date
+        const chartDataArray = Object.values(chartTemp).sort((a, b) => {
+          const dateA = dayjs(a.date, "MM/DD/YYYY");
+          const dateB = dayjs(b.date, "MM/DD/YYYY");
+          return dateA.isBefore(dateB) ? -1 : 1;
+        });
 
-      setFoodEntries(foods);
-      setTotalCalories(total);
-      setChartData(chartDataArray);
+        setFoodEntries(foods);
+        setTotalCalories(total);
+        setChartData(chartDataArray);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
     };
 
     fetchData();
-  }, [filter, selectedNutrient]);
+  }, [filter, selectedNutrient, auth.currentUser]);
 
   // Get color based on selected nutrient
   const getNutrientColor = (nutrient) => {
