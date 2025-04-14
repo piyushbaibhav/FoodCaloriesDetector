@@ -5,6 +5,7 @@ import { db } from '../firebase';
 import { doc, onSnapshot, collection, query, orderBy, getDocs } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import dayjs from 'dayjs';
+import { useDarkMode } from '../context/DarkModeContext';
 
 // Custom SVG Icons
 const ProgressIcon = () => (
@@ -31,6 +32,7 @@ const NutrientProgress = () => {
   });
   const auth = getAuth();
   const user = auth.currentUser;
+  const { isDarkMode } = useDarkMode();
 
   const extractNutrients = (nutritionInfo) => {
     if (!nutritionInfo || typeof nutritionInfo !== "string") {
@@ -151,60 +153,60 @@ const NutrientProgress = () => {
   ];
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+    <div className={`${isDarkMode ? 'bg-dark-card' : 'bg-white'} p-6 rounded-xl shadow-sm border ${isDarkMode ? 'border-gray-700' : 'border-gray-100'}`}>
       {/* SVG Gradients for circular progress */}
       <svg width="0" height="0" className="absolute">
         <defs>
           <linearGradient id="gradient-0" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#10b981" />
-            <stop offset="100%" stopColor="#10b981" />
+            <stop offset="0%" stopColor={isDarkMode ? "#10b981" : "#10b981"} />
+            <stop offset="100%" stopColor={isDarkMode ? "#10b981" : "#10b981"} />
           </linearGradient>
           <linearGradient id="gradient-10" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#10b981" />
-            <stop offset="100%" stopColor="#34d399" />
+            <stop offset="0%" stopColor={isDarkMode ? "#10b981" : "#10b981"} />
+            <stop offset="100%" stopColor={isDarkMode ? "#34d399" : "#34d399"} />
           </linearGradient>
           <linearGradient id="gradient-20" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#34d399" />
-            <stop offset="100%" stopColor="#6ee7b7" />
+            <stop offset="0%" stopColor={isDarkMode ? "#34d399" : "#34d399"} />
+            <stop offset="100%" stopColor={isDarkMode ? "#6ee7b7" : "#6ee7b7"} />
           </linearGradient>
           <linearGradient id="gradient-30" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#6ee7b7" />
-            <stop offset="100%" stopColor="#a7f3d0" />
+            <stop offset="0%" stopColor={isDarkMode ? "#6ee7b7" : "#6ee7b7"} />
+            <stop offset="100%" stopColor={isDarkMode ? "#a7f3d0" : "#a7f3d0"} />
           </linearGradient>
           <linearGradient id="gradient-40" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#a7f3d0" />
-            <stop offset="100%" stopColor="#f59e0b" />
+            <stop offset="0%" stopColor={isDarkMode ? "#a7f3d0" : "#a7f3d0"} />
+            <stop offset="100%" stopColor={isDarkMode ? "#f59e0b" : "#f59e0b"} />
           </linearGradient>
           <linearGradient id="gradient-50" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#f59e0b" />
-            <stop offset="100%" stopColor="#fbbf24" />
+            <stop offset="0%" stopColor={isDarkMode ? "#f59e0b" : "#f59e0b"} />
+            <stop offset="100%" stopColor={isDarkMode ? "#fbbf24" : "#fbbf24"} />
           </linearGradient>
           <linearGradient id="gradient-60" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#fbbf24" />
-            <stop offset="100%" stopColor="#fcd34d" />
+            <stop offset="0%" stopColor={isDarkMode ? "#fbbf24" : "#fbbf24"} />
+            <stop offset="100%" stopColor={isDarkMode ? "#fcd34d" : "#fcd34d"} />
           </linearGradient>
           <linearGradient id="gradient-70" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#fcd34d" />
-            <stop offset="100%" stopColor="#f97316" />
+            <stop offset="0%" stopColor={isDarkMode ? "#fcd34d" : "#fcd34d"} />
+            <stop offset="100%" stopColor={isDarkMode ? "#f97316" : "#f97316"} />
           </linearGradient>
           <linearGradient id="gradient-80" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#f97316" />
-            <stop offset="100%" stopColor="#fb923c" />
+            <stop offset="0%" stopColor={isDarkMode ? "#f97316" : "#f97316"} />
+            <stop offset="100%" stopColor={isDarkMode ? "#fb923c" : "#fb923c"} />
           </linearGradient>
           <linearGradient id="gradient-90" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#fb923c" />
-            <stop offset="100%" stopColor="#fdba74" />
+            <stop offset="0%" stopColor={isDarkMode ? "#fb923c" : "#fb923c"} />
+            <stop offset="100%" stopColor={isDarkMode ? "#fdba74" : "#fdba74"} />
           </linearGradient>
         </defs>
       </svg>
 
       <div className="flex items-center mb-8">
-        <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-4">
-          <ProgressIcon className="text-green-600" />
+        <div className={`w-10 h-10 ${isDarkMode ? 'bg-green-900' : 'bg-green-100'} rounded-lg flex items-center justify-center mr-4`}>
+          <ProgressIcon className={isDarkMode ? 'text-green-400' : 'text-green-600'} />
         </div>
         <div>
-          <h2 className="text-xl font-semibold text-gray-800">Daily Nutrient Progress</h2>
-          <p className="text-gray-500 text-sm">Track your nutrition goals achievement</p>
+          <h2 className={`text-xl font-semibold ${isDarkMode ? 'text-dark-text' : 'text-gray-800'}`}>Daily Nutrient Progress</h2>
+          <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Track your nutrition goals achievement</p>
         </div>
       </div>
 
@@ -222,8 +224,8 @@ const NutrientProgress = () => {
                   text={`${percentage}%`}
                   styles={buildStyles({
                     pathColor: pathColor,
-                    textColor: '#1f2937',
-                    trailColor: '#f3f4f6',
+                    textColor: isDarkMode ? '#e5e7eb' : '#1f2937',
+                    trailColor: isDarkMode ? '#374151' : '#f3f4f6',
                     textSize: '16px',
                     pathTransitionDuration: 0.5,
                     pathTransition: 'stroke-dashoffset 0.5s ease 0s',
@@ -234,17 +236,17 @@ const NutrientProgress = () => {
               <div className="text-center w-full">
                 <div className="flex items-center justify-center mb-1">
                   <span className="text-lg mr-2">{nutrient.icon}</span>
-                  <h3 className="font-medium text-gray-800">{nutrient.name}</h3>
+                  <h3 className={`font-medium ${isDarkMode ? 'text-dark-text' : 'text-gray-800'}`}>{nutrient.name}</h3>
                   {isComplete && (
                     <span className="ml-2">
-                      <SuccessIcon className="text-green-500" />
+                      <SuccessIcon className={isDarkMode ? 'text-green-400' : 'text-green-500'} />
                     </span>
                   )}
                 </div>
-                <p className="text-sm text-gray-500 mb-2">
+                <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'} mb-2`}>
                   {nutrient.consumed.toFixed(1)} / {nutrient.goal}{nutrient.unit}
                 </p>
-                <div className="w-full bg-gray-100 rounded-full h-1.5">
+                <div className={`w-full ${isDarkMode ? 'bg-gray-700' : 'bg-gray-100'} rounded-full h-1.5`}>
                   <div 
                     className="h-1.5 rounded-full" 
                     style={{ 
@@ -259,23 +261,23 @@ const NutrientProgress = () => {
         })}
       </div>
 
-      <div className="mt-8 pt-6 border-t border-gray-100">
+      <div className={`mt-8 pt-6 border-t ${isDarkMode ? 'border-gray-700' : 'border-gray-100'}`}>
         <div className="flex flex-wrap justify-center gap-4">
           <div className="flex items-center">
-            <div className="w-3 h-3 rounded-full bg-gradient-to-r from-green-400 to-green-600 mr-2"></div>
-            <span className="text-xs text-gray-600">Low (0-30%)</span>
+            <div className={`w-3 h-3 rounded-full bg-gradient-to-r ${isDarkMode ? 'from-green-500 to-green-600' : 'from-green-400 to-green-600'} mr-2`}></div>
+            <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Low (0-30%)</span>
           </div>
           <div className="flex items-center">
-            <div className="w-3 h-3 rounded-full bg-gradient-to-r from-yellow-400 to-yellow-600 mr-2"></div>
-            <span className="text-xs text-gray-600">Moderate (30-70%)</span>
+            <div className={`w-3 h-3 rounded-full bg-gradient-to-r ${isDarkMode ? 'from-yellow-500 to-yellow-600' : 'from-yellow-400 to-yellow-600'} mr-2`}></div>
+            <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Moderate (30-70%)</span>
           </div>
           <div className="flex items-center">
-            <div className="w-3 h-3 rounded-full bg-gradient-to-r from-orange-400 to-orange-600 mr-2"></div>
-            <span className="text-xs text-gray-600">High (70-100%)</span>
+            <div className={`w-3 h-3 rounded-full bg-gradient-to-r ${isDarkMode ? 'from-orange-500 to-orange-600' : 'from-orange-400 to-orange-600'} mr-2`}></div>
+            <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>High (70-100%)</span>
           </div>
           <div className="flex items-center">
-            <div className="w-3 h-3 rounded-full bg-green-500 mr-2"></div>
-            <span className="text-xs text-gray-600">Goal Achieved</span>
+            <div className={`w-3 h-3 rounded-full ${isDarkMode ? 'bg-green-400' : 'bg-green-500'} mr-2`}></div>
+            <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Goal Achieved</span>
           </div>
         </div>
       </div>

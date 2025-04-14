@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { getAuth, signOut } from "firebase/auth";
+import DarkModeToggle from './DarkModeToggle';
 
 // SVG Icons
 const FoodInputIcon = () => (
@@ -102,14 +103,14 @@ const Sidebar = ({ setSection }) => {
       {/* Mobile Toggle Button */}
       <button
         onClick={toggleSidebar}
-        className="md:hidden fixed top-4 left-4 z-50 p-2 bg-green-600 text-white rounded-lg shadow-md hover:bg-green-700 transition-all"
+        className="md:hidden fixed top-4 left-4 z-50 p-2 bg-green-600 text-white rounded-lg shadow-md hover:bg-green-700 transition-all dark:bg-green-700 dark:hover:bg-green-800"
       >
         <MenuIcon />
       </button>
 
       {/* Sidebar */}
       <div
-        className={`fixed top-0 left-0 h-screen z-40 bg-white text-gray-800 transition-transform duration-300 ease-in-out shadow-md
+        className={`fixed top-0 left-0 h-screen z-40 bg-white dark:bg-dark-bg text-gray-800 dark:text-dark-text transition-transform duration-300 ease-in-out shadow-md
           ${isOpen ? "translate-x-0 w-64" : "-translate-x-full"}
           md:translate-x-0 md:w-64 md:sticky`}
       >
@@ -118,10 +119,10 @@ const Sidebar = ({ setSection }) => {
           <div>
             {/* Logo */}
             <div className="text-xl font-bold p-4 flex items-center">
-              <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center mr-3">
-                <NutritionLogo className="text-green-600" />
+              <div className="w-10 h-10 bg-green-100 dark:bg-green-900 rounded-xl flex items-center justify-center mr-3">
+                <NutritionLogo className="text-green-600 dark:text-green-400" />
               </div>
-              <span className="text-green-600">NutriTrack</span>
+              <span className="text-green-600 dark:text-green-400">NutriTrack</span>
             </div>
             
             {/* Navigation Items */}
@@ -133,9 +134,9 @@ const Sidebar = ({ setSection }) => {
                     setSection(item.id);
                     setIsOpen(false);
                   }}
-                  className="w-full text-left hover:bg-green-50 md:hover:translate-x-2 transition-all duration-300 p-3 rounded-lg cursor-pointer flex items-center gap-3"
+                  className="w-full text-left hover:bg-green-50 dark:hover:bg-green-900/30 md:hover:translate-x-2 transition-all duration-300 p-3 rounded-lg cursor-pointer flex items-center gap-3"
                 >
-                  <span className="text-green-600">{item.icon}</span>
+                  <span className="text-green-600 dark:text-green-400">{item.icon}</span>
                   <span>{item.label}</span>
                 </button>
               ))}
@@ -146,7 +147,7 @@ const Sidebar = ({ setSection }) => {
           <div className="p-4">
             <button
               onClick={handleSignOut}
-              className="w-full flex items-center gap-3 p-3 rounded-lg bg-green-600 text-white hover:bg-green-700 transition-all shadow-sm hover:shadow-md"
+              className="w-full flex items-center gap-3 p-3 rounded-lg bg-green-600 text-white hover:bg-green-700 transition-all shadow-sm hover:shadow-md dark:bg-green-700 dark:hover:bg-green-800"
             >
               <LogOutIcon />
               <span>Sign Out</span>

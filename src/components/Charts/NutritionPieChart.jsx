@@ -4,27 +4,28 @@ import { db } from "../../firebase";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import dayjs from "dayjs";
 import { getAuth } from "firebase/auth";
+import { useDarkMode } from "../../context/DarkModeContext";
 
 // Chart Icon Component
 const PieChartIcon = () => (
-  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-    <path d="M11 2v20c-5.07-.5-9-4.79-9-10s3.93-9.5 9-10zm2.03 0v8.99L22 10.99c0-5.21-3.93-9.5-8.97-8.99zm0 12.01V22c5.07-.5 9-4.79 9-10h-8.97v.01z"/>
+  <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z" />
   </svg>
 );
 
 // Custom tooltip for pie chart
 const CustomTooltip = ({ active, payload }) => {
+  const { isDarkMode } = useDarkMode();
+  
   if (active && payload && payload.length) {
     const data = payload[0].payload;
-    const unit = data.name === "Calories" ? "kcal" : "g";
+    const percentage = ((data.value / data.total) * 100).toFixed(1);
+    
     return (
-      <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-md">
-        <p className="font-medium text-gray-800">{data.name}</p>
-        <p className="text-green-600 font-semibold">
-          {data.name === "Calories" ? Math.round(data.value) : data.value.toFixed(1)} {unit}
-        </p>
-        <p className="text-sm text-gray-500">
-          {((data.value / payload[0].payload.total) * 100).toFixed(1)}% of total
+      <div className={`p-3 rounded-lg shadow-lg ${isDarkMode ? 'bg-dark-chart-tooltip-bg text-dark-chart-tooltip-text border border-dark-chart-tooltip-border' : 'bg-white text-gray-800 border border-gray-200'}`}>
+        <p className="font-semibold">{data.name}</p>
+        <p className="text-sm" style={{ color: data.color }}>
+          {data.value}g ({percentage}%)
         </p>
       </div>
     );
@@ -41,6 +42,7 @@ const NutritionPieChart = () => {
     fiber: 0,
   });
   const auth = getAuth();
+  const { isDarkMode } = useDarkMode();
 
   const extractNutrients = (nutritionInfo) => {
     if (!nutritionInfo || typeof nutritionInfo !== "string") {
@@ -115,121 +117,72 @@ const NutritionPieChart = () => {
   }, [auth.currentUser]);
 
   const chartData = [
-    { name: "Calories", value: nutrientData.calories },
-    { name: "Protein", value: nutrientData.protein },
-    { name: "Fat", value: nutrientData.fat },
-    { name: "Carbs", value: nutrientData.carbs },
-    { name: "Fiber", value: nutrientData.fiber },
+    { name: "Calories", value: nutrientData.calories, color: "#10b981" },
+    { name: "Protein", value: nutrientData.protein, color: "#3b82f6" },
+    { name: "Fat", value: nutrientData.fat, color: "#f59e0b" },
+    { name: "Carbs", value: nutrientData.carbs, color: "#8b5cf6" },
+    { name: "Fiber", value: nutrientData.fiber, color: "#ec4899" },
   ];
 
-  // Calculate total for percentage
   const total = chartData.reduce((sum, item) => sum + item.value, 0);
   chartData.forEach(item => item.total = total);
 
-  // Define colors with gradients
-  const COLORS = {
-    Calories: "#10b981", // Green
-    Protein: "#3b82f6", // Blue
-    Fat: "#f59e0b", // Yellow
-    Carbs: "#8b5cf6", // Purple
-    Fiber: "#ec4899", // Pink
-  };
-
   return (
-    <div className="p-4 sm:p-6 bg-white rounded-xl shadow-md w-full">
-      <div className="flex items-center justify-center mb-4 sm:mb-6">
-        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-xl flex items-center justify-center mr-3">
-          <PieChartIcon className="text-green-600" />
-        </div>
-        <h2 className="text-xl sm:text-2xl font-bold text-gray-800">
-          Today's <span className="text-green-600">Nutrition</span> Breakdown
+    <div className="bg-white dark:bg-dark-card p-6 rounded-xl shadow-md">
+      <div className="flex items-center gap-2 mb-6">
+        <PieChartIcon className="text-green-600 dark:text-green-400" />
+        <h2 className="text-xl font-semibold text-gray-800 dark:text-dark-text">
+          Nutrition Distribution
         </h2>
       </div>
 
-      <div className="bg-white p-2 sm:p-4 rounded-lg border border-gray-200 shadow-sm w-full">
-        <div className="w-full" style={{ height: 'min(400px, 80vw)' }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <defs>
-                <linearGradient id="caloriesGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/>
-                  <stop offset="95%" stopColor="#10b981" stopOpacity={0.1}/>
-                </linearGradient>
-                <linearGradient id="proteinGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8}/>
-                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.1}/>
-                </linearGradient>
-                <linearGradient id="fatGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.8}/>
-                  <stop offset="95%" stopColor="#f59e0b" stopOpacity={0.1}/>
-                </linearGradient>
-                <linearGradient id="carbsGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.8}/>
-                  <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.1}/>
-                </linearGradient>
-                <linearGradient id="fiberGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#ec4899" stopOpacity={0.8}/>
-                  <stop offset="95%" stopColor="#ec4899" stopOpacity={0.1}/>
-                </linearGradient>
-              </defs>
-              <Pie
-                data={chartData}
-                dataKey="value"
-                nameKey="name"
-                cx="50%"
-                cy="50%"
-                outerRadius="80%"
-                innerRadius="40%"
-                paddingAngle={2}
-                label={({ name, value, total }) => {
-                  const percentage = ((value / total) * 100).toFixed(0);
-                  return percentage > 5 ? `${percentage}%` : '';
-                }}
-                labelLine={false}
-                animationDuration={1500}
-                animationBegin={0}
-              >
-                {chartData.map((entry, index) => (
-                  <Cell 
-                    key={`cell-${index}`} 
-                    fill={COLORS[entry.name]}
-                    stroke="#fff"
-                    strokeWidth={2}
-                  />
-                ))}
-              </Pie>
-              <Tooltip content={<CustomTooltip />} />
-              <Legend 
-                verticalAlign="bottom" 
-                height={36}
-                formatter={(value) => (
-                  <span className="text-gray-700 font-medium text-sm sm:text-base">{value}</span>
-                )}
-              />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
+      <div className="h-[300px] w-full">
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie
+              data={chartData}
+              cx="50%"
+              cy="50%"
+              labelLine={false}
+              outerRadius={100}
+              fill="#8884d8"
+              dataKey="value"
+              label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+            >
+              {chartData.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.color} />
+              ))}
+            </Pie>
+            <Tooltip content={<CustomTooltip />} />
+            <Legend 
+              formatter={(value) => (
+                <span className={isDarkMode ? "text-dark-text" : "text-gray-600"}>
+                  {value}
+                </span>
+              )}
+            />
+          </PieChart>
+        </ResponsiveContainer>
       </div>
 
-      {/* Compact summary section */}
-      <div className="mt-4 flex flex-wrap justify-center gap-2 text-sm">
+      <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-4">
         {chartData.map((item) => (
-          <div 
+          <div
             key={item.name}
-            className="inline-flex items-center px-2 py-1 rounded-full bg-gray-50 border border-gray-200"
+            className="flex flex-col items-center p-3 rounded-lg bg-gray-50 dark:bg-gray-800"
           >
-            <div 
-              className="w-2 h-2 rounded-full mr-1.5"
-              style={{ backgroundColor: COLORS[item.name] }}
+            <div
+              className="w-3 h-3 rounded-full mb-1"
+              style={{ backgroundColor: item.color }}
             />
-            <span className="font-medium text-gray-700">{item.name}:</span>
-            <span className="ml-1 text-gray-900">
-              {item.name === "Calories" 
-                ? Math.round(item.value) 
-                : item.value.toFixed(1)}
-              <span className="text-gray-500 ml-1">
-                {item.name === "Calories" ? "kcal" : "g"}
-              </span>
+            <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
+              {item.name}
+            </span>
+            <span className="text-base font-semibold text-gray-800 dark:text-dark-text">
+              {item.value}g
+            </span>
+            <span className="text-xs text-gray-500 dark:text-gray-400">
+              {((item.value / total) * 100).toFixed(1)}%
             </span>
           </div>
         ))}

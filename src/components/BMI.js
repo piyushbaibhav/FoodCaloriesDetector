@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { doc, setDoc, getDoc, updateDoc, arrayUnion } from "firebase/firestore";
 import { db } from "../firebase";
 import { getAuth } from "firebase/auth";
+import { useDarkMode } from "../context/DarkModeContext";
 import {
   BarChart,
   Bar,
@@ -22,13 +23,15 @@ const BMIIcon = () => (
 
 // Custom tooltip for BMI chart
 const CustomTooltip = ({ active, payload, label }) => {
+  const { isDarkMode } = useDarkMode();
+  
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     return (
-      <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-md">
-        <p className="font-medium text-gray-800">{label}</p>
+      <div className={`p-3 rounded-lg shadow-lg ${isDarkMode ? 'bg-dark-chart-tooltip-bg text-dark-chart-tooltip-text border border-dark-chart-tooltip-border' : 'bg-white text-gray-800 border border-gray-200'}`}>
+        <p className="font-medium">{label}</p>
         <p className="text-green-600 font-semibold">BMI: {data.bmi}</p>
-        <p className="text-sm text-gray-600">Category: {data.category}</p>
+        <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Category: {data.category}</p>
       </div>
     );
   }
@@ -41,6 +44,7 @@ const BMICalculator = () => {
   const [bmi, setBMI] = useState(null);
   const [bmiCategory, setBMICategory] = useState("");
   const [history, setHistory] = useState([]);
+  const { isDarkMode } = useDarkMode();
 
   const user = getAuth().currentUser;
 
@@ -99,32 +103,32 @@ const BMICalculator = () => {
   const getCategoryColor = (category) => {
     switch (category) {
       case "Underweight":
-        return "#3b82f6"; // Blue
+        return isDarkMode ? "#3b82f6" : "#3b82f6"; // Blue
       case "Normal":
-        return "#10b981"; // Green
+        return isDarkMode ? "#10b981" : "#10b981"; // Green
       case "Overweight":
-        return "#f59e0b"; // Yellow
+        return isDarkMode ? "#f59e0b" : "#f59e0b"; // Yellow
       case "Obese":
-        return "#ef4444"; // Red
+        return isDarkMode ? "#ef4444" : "#ef4444"; // Red
       default:
-        return "#10b981"; // Default green
+        return isDarkMode ? "#10b981" : "#10b981"; // Default green
     }
   };
 
   return (
-    <div className="p-6 max-w-2xl mx-auto bg-white rounded-xl shadow-md">
+    <div className={`p-6 max-w-2xl mx-auto ${isDarkMode ? 'bg-dark-card' : 'bg-white'} rounded-xl shadow-md border ${isDarkMode ? 'border-gray-700' : 'border-gray-100'}`}>
       <div className="flex items-center justify-center mb-6">
-        <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mr-3">
-          <BMIIcon className="text-green-600" />
+        <div className={`w-12 h-12 ${isDarkMode ? 'bg-green-900' : 'bg-green-100'} rounded-xl flex items-center justify-center mr-3`}>
+          <BMIIcon className={isDarkMode ? 'text-green-400' : 'text-green-600'} />
         </div>
-        <h2 className="text-2xl font-bold text-gray-800">
-          BMI <span className="text-green-600">Calculator</span>
+        <h2 className={`text-2xl font-bold ${isDarkMode ? 'text-dark-text' : 'text-gray-800'}`}>
+          BMI <span className={isDarkMode ? 'text-green-400' : 'text-green-600'}>Calculator</span>
         </h2>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700">
+          <label className={`block text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
             Height (cm)
           </label>
           <input
@@ -132,11 +136,11 @@ const BMICalculator = () => {
             placeholder="Height in centimeters"
             value={height}
             onChange={(e) => setHeight(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            className={`w-full px-4 py-3 border ${isDarkMode ? 'border-gray-700 bg-dark-input text-dark-text' : 'border-gray-200 bg-white text-gray-800'} rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent`}
           />
         </div>
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700">
+          <label className={`block text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
             Weight (kg)
           </label>
           <input
@@ -144,7 +148,7 @@ const BMICalculator = () => {
             placeholder="Weight in kilograms"
             value={weight}
             onChange={(e) => setWeight(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            className={`w-full px-4 py-3 border ${isDarkMode ? 'border-gray-700 bg-dark-input text-dark-text' : 'border-gray-200 bg-white text-gray-800'} rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent`}
           />
         </div>
         <div className="flex items-end">
@@ -158,18 +162,18 @@ const BMICalculator = () => {
       </div>
 
       {bmi && (
-        <div className="text-center mb-8 p-4 bg-green-50 rounded-lg border border-green-100">
-          <p className="text-lg font-semibold text-gray-800">
-            Your BMI is: <span className="text-green-600 font-bold">{bmi}</span> –{" "}
+        <div className={`text-center mb-8 p-4 ${isDarkMode ? 'bg-green-900/20 border-green-800' : 'bg-green-50 border-green-100'} rounded-lg border`}>
+          <p className={`text-lg font-semibold ${isDarkMode ? 'text-dark-text' : 'text-gray-800'}`}>
+            Your BMI is: <span className={isDarkMode ? 'text-green-400' : 'text-green-600'}>{bmi}</span> –{" "}
             <span
               className={`font-bold ${
                 bmiCategory === "Normal"
-                  ? "text-green-600"
+                  ? isDarkMode ? "text-green-400" : "text-green-600"
                   : bmiCategory === "Underweight"
-                  ? "text-blue-500"
+                  ? isDarkMode ? "text-blue-400" : "text-blue-500"
                   : bmiCategory === "Overweight"
-                  ? "text-yellow-600"
-                  : "text-red-600"
+                  ? isDarkMode ? "text-yellow-400" : "text-yellow-600"
+                  : isDarkMode ? "text-red-400" : "text-red-600"
               }`}
             >
               {bmiCategory}
@@ -180,11 +184,11 @@ const BMICalculator = () => {
 
       {history.length > 0 && (
         <div>
-          <h3 className="text-xl font-semibold mb-4 text-gray-800 text-center">
-            BMI <span className="text-green-600">History</span>
+          <h3 className={`text-xl font-semibold mb-4 ${isDarkMode ? 'text-dark-text' : 'text-gray-800'} text-center`}>
+            BMI <span className={isDarkMode ? 'text-green-400' : 'text-green-600'}>History</span>
           </h3>
-          <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-            <ResponsiveContainer width="100%" height={300}>
+          <div className="h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={history.map((item) => ({
                   name: formatDate(item.date),
@@ -194,15 +198,20 @@ const BMICalculator = () => {
                 }))}
                 margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
               >
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                <CartesianGrid 
+                  strokeDasharray="3 3" 
+                  stroke={isDarkMode ? "#404040" : "#f0f0f0"} 
+                />
                 <XAxis 
                   dataKey="name" 
-                  tick={{ fill: '#6b7280' }}
-                  axisLine={{ stroke: '#e5e7eb' }}
+                  stroke={isDarkMode ? "#e5e5e5" : "#6b7280"}
+                  tick={{ fill: isDarkMode ? "#e5e5e5" : "#6b7280" }}
+                  axisLine={{ stroke: isDarkMode ? "#e5e5e5" : "#e5e7eb" }}
                 />
                 <YAxis 
-                  tick={{ fill: '#6b7280' }}
-                  axisLine={{ stroke: '#e5e7eb' }}
+                  stroke={isDarkMode ? "#e5e5e5" : "#6b7280"}
+                  tick={{ fill: isDarkMode ? "#e5e5e5" : "#6b7280" }}
+                  axisLine={{ stroke: isDarkMode ? "#e5e5e5" : "#e5e7eb" }}
                   domain={[0, 'dataMax + 5']}
                 />
                 <Tooltip content={<CustomTooltip />} />
@@ -210,7 +219,7 @@ const BMICalculator = () => {
                 <Bar 
                   dataKey="bmi" 
                   name="BMI Value"
-                  fill="#10b981" 
+                  fill={isDarkMode ? "#4a9eff" : "#10b981"} 
                   radius={[10, 10, 0, 0]}
                   animationDuration={1500}
                   animationBegin={0}

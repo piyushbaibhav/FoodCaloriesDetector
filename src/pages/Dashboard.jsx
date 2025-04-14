@@ -11,6 +11,7 @@ import NutritionalFactFinder from "../components/NutritionalFactFinder";
 import FoodLog from "../components/FoodLog";
 import AINutritionistChat from "../components/AINutritionistChat";
 import TrackerDashboard from "../components/TrackerDashboard";
+import DarkModeToggle from "../components/DarkModeToggle";
 
 // Decorative SVG Vector
 const WaveVector = () => (
@@ -52,8 +53,8 @@ const Dashboard = () => {
         );
       case "nutritionist":
         return (
-          <div className="mt-10 w-full max-w-5xl bg-white p-6 rounded-xl shadow-md">
-            <h1 className="text-2xl font-bold text-green-700 mb-6">
+          <div className="mt-10 w-full max-w-5xl bg-white dark:bg-dark-card p-6 rounded-xl shadow-md">
+            <h1 className="text-2xl font-bold text-green-700 dark:text-green-400 mb-6">
               AI Nutritionist Chat
             </h1>
             <AINutritionistChat />
@@ -61,8 +62,8 @@ const Dashboard = () => {
         );
       case "foodlog":
         return (
-          <div className="mt-10 w-full max-w-5xl bg-white p-6 rounded-xl shadow-md">
-            <h1 className="text-2xl font-bold text-green-700 mb-6">
+          <div className="mt-10 w-full max-w-5xl bg-white dark:bg-dark-card p-6 rounded-xl shadow-md">
+            <h1 className="text-2xl font-bold text-green-700 dark:text-green-400 mb-6">
               Food Log
             </h1>
             <FoodLog />
@@ -70,8 +71,8 @@ const Dashboard = () => {
         );
       case "calorie":
         return (
-          <div className="mt-10 w-full max-w-5xl bg-white p-6 rounded-xl shadow-md">
-            <h1 className="text-2xl font-bold text-green-700 mb-6">
+          <div className="mt-10 w-full max-w-5xl bg-white dark:bg-dark-card p-6 rounded-xl shadow-md">
+            <h1 className="text-2xl font-bold text-green-700 dark:text-green-400 mb-6">
               Calorie History
             </h1>
             <CalorieChart />
@@ -79,8 +80,8 @@ const Dashboard = () => {
         );
       case "bmi":
         return (
-          <div className="mt-10 w-full max-w-5xl bg-white p-6 rounded-xl shadow-md">
-            <h1 className="text-2xl font-bold text-green-700 mb-6">
+          <div className="mt-10 w-full max-w-5xl bg-white dark:bg-dark-card p-6 rounded-xl shadow-md">
+            <h1 className="text-2xl font-bold text-green-700 dark:text-green-400 mb-6">
               BMI Calculator
             </h1>
             <BMICalculator />
@@ -89,7 +90,7 @@ const Dashboard = () => {
       case "progress":
         if (!goalsSet) {
           return (
-            <div className="mt-10 w-full max-w-5xl bg-white p-6 rounded-xl shadow-md">
+            <div className="mt-10 w-full max-w-5xl bg-white dark:bg-dark-card p-6 rounded-xl shadow-md">
               <GoalSetting
                 setDailyGoals={setDailyGoals}
                 setGoalsSet={setGoalsSet}
@@ -98,11 +99,11 @@ const Dashboard = () => {
           );
         } else {
           return (
-            <div className="w-full bg-white p-6 rounded-xl shadow-md mt-10">
-              <h1 className="text-2xl font-bold text-green-700 mb-4">
+            <div className="w-full bg-white dark:bg-dark-card p-6 rounded-xl shadow-md mt-10">
+              <h1 className="text-2xl font-bold text-green-700 dark:text-green-400 mb-4">
                 Daily Progress
               </h1>
-              <p className="text-gray-600 mb-6">
+              <p className="text-gray-600 dark:text-gray-300 mb-6">
                 Track your progress toward achieving daily nutritional goals.
               </p>
               <NutrientProgress />
@@ -111,8 +112,8 @@ const Dashboard = () => {
         }
       case "facts":
         return (
-          <div className="mt-10 w-full max-w-5xl bg-white p-6 rounded-xl shadow-md">
-            <h1 className="text-2xl font-bold text-green-700 mb-6">
+          <div className="mt-10 w-full max-w-5xl bg-white dark:bg-dark-card p-6 rounded-xl shadow-md">
+            <h1 className="text-2xl font-bold text-green-700 dark:text-green-400 mb-6">
               Nutritional Fact Finder
             </h1>
             <NutritionalFactFinder />
@@ -121,18 +122,18 @@ const Dashboard = () => {
       default:
         return (
           <div className="flex flex-col lg:flex-row w-full gap-6">
-            <div className="flex-1 bg-white p-6 rounded-xl shadow-md">
+            <div className="flex-1 bg-white dark:bg-dark-card p-6 rounded-xl shadow-md">
               <div className="w-full max-w-3xl text-center mb-8">
-                <h1 className="text-3xl font-bold mb-2 text-green-700">
+                <h1 className="text-3xl font-bold mb-2 text-green-700 dark:text-green-400">
                   Hello, {username}!
                 </h1>
-                <h2 className="text-xl text-gray-600">
+                <h2 className="text-xl text-gray-600 dark:text-gray-300">
                   What food are you having today?
                 </h2>
               </div>
               <FoodInput />
             </div>
-            <div className="w-full lg:w-[400px] bg-white p-6 rounded-xl shadow-md">
+            <div className="w-full lg:w-[400px] bg-white dark:bg-dark-card p-6 rounded-xl shadow-md">
               <NutritionPieChart />
             </div>
           </div>
@@ -141,16 +142,13 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen flex bg-[#f8fafc] relative overflow-hidden">
-      {/* Decorative Background Elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-0 right-0 w-1/3 h-full bg-[#e0f2fe] opacity-20 -rotate-12 transform origin-bottom-right"></div>
-        <WaveVector />
-      </div>
-      
+    <div className="flex h-screen bg-gray-50 dark:bg-dark-bg">
+      <DarkModeToggle />
       <Sidebar setSection={setSection} />
-      <main className="flex flex-col items-center w-full ml-0 md:ml-64 p-4 md:p-6 transition-all duration-300 z-10">
-        {renderSection()}
+      <main className="flex-1 overflow-y-auto p-4 md:p-8">
+        <div className="max-w-7xl mx-auto">
+          {renderSection()}
+        </div>
       </main>
     </div>
   );

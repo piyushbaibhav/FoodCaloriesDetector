@@ -3,6 +3,7 @@ import { getAuth } from 'firebase/auth';
 import { db } from '../firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import { getNutritionalFacts } from '../api/nutrition-facts';
+import { useDarkMode } from '../context/DarkModeContext';
 
 // Custom SVG Icons
 const SearchIcon = () => (
@@ -24,6 +25,7 @@ const NutritionalFactFinder = () => {
   const [error, setError] = useState(null);
   const auth = getAuth();
   const user = auth.currentUser;
+  const { isDarkMode } = useDarkMode();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -58,7 +60,7 @@ const NutritionalFactFinder = () => {
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto bg-white/90 backdrop-blur-sm p-8 rounded-xl shadow-sm border border-rose-100 relative">
+    <div className={`w-full max-w-4xl mx-auto ${isDarkMode ? 'bg-dark-card' : 'bg-white/90'} backdrop-blur-sm p-8 rounded-xl shadow-sm border ${isDarkMode ? 'border-gray-700' : 'border-rose-100'} relative`}>
       {/* Decorative background elements */}
       <div className="absolute -z-10 inset-0 overflow-hidden opacity-10">
         <svg className="absolute top-1/4 left-1/4 w-40 h-40" viewBox="0 0 24 24" fill="#f43f5e">
@@ -71,13 +73,13 @@ const NutritionalFactFinder = () => {
 
       {/* Header */}
       <div className="flex flex-col items-center mb-8">
-        <div className="w-14 h-14 bg-rose-100 rounded-2xl flex items-center justify-center mb-4">
-          <NutritionIcon className="text-rose-600" />
+        <div className={`w-14 h-14 ${isDarkMode ? 'bg-gray-700' : 'bg-rose-100'} rounded-2xl flex items-center justify-center mb-4`}>
+          <NutritionIcon className={isDarkMode ? "text-rose-400" : "text-rose-600"} />
         </div>
-        <h2 className="text-3xl font-bold text-center text-gray-800">
+        <h2 className={`text-3xl font-bold text-center ${isDarkMode ? 'text-dark-text' : 'text-gray-800'}`}>
           Nutritional <span className="text-rose-600">Fact Finder</span>
         </h2>
-        <p className="text-gray-500 mt-2 text-center">
+        <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-500'} mt-2 text-center`}>
           Discover detailed nutrition information for any food
         </p>
       </div>
@@ -86,14 +88,14 @@ const NutritionalFactFinder = () => {
       <form onSubmit={handleSubmit} className="mb-8">
         <div className="relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <SearchIcon className="text-gray-400" />
+            <SearchIcon className={isDarkMode ? "text-gray-400" : "text-gray-400"} />
           </div>
           <input
             type="text"
             value={foodName}
             onChange={(e) => setFoodName(e.target.value)}
             placeholder="Search for a food (e.g., banana, salmon, quinoa)"
-            className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent"
+            className={`w-full pl-10 pr-4 py-3 border ${isDarkMode ? 'border-gray-700 bg-gray-800 text-gray-200' : 'border-gray-200 bg-white text-gray-800'} rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent`}
             required
           />
           <button
@@ -108,7 +110,7 @@ const NutritionalFactFinder = () => {
 
       {/* Error Message */}
       {error && (
-        <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded-lg mb-6">
+        <div className={`${isDarkMode ? 'bg-red-900/50 border-red-700 text-red-300' : 'bg-red-50 border-red-500 text-red-700'} border-l-4 p-4 rounded-lg mb-6`}>
           <div className="flex items-center">
             <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9z" clipRule="evenodd" />
@@ -120,12 +122,12 @@ const NutritionalFactFinder = () => {
 
       {/* Results Section */}
       {result && (
-        <div className="bg-rose-50/50 p-6 rounded-lg border border-rose-100">
+        <div className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-rose-50/50 border-rose-100'} p-6 rounded-lg border`}>
           <div className="flex items-center mb-4">
             <svg className="w-6 h-6 text-rose-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
             </svg>
-            <h3 className="text-xl font-semibold text-gray-800">
+            <h3 className={`text-xl font-semibold ${isDarkMode ? 'text-dark-text' : 'text-gray-800'}`}>
               {result.foodName}
             </h3>
           </div>
@@ -137,17 +139,17 @@ const NutritionalFactFinder = () => {
                   <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
                   <path fillRule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clipRule="evenodd" />
                 </svg>
-                <h4 className="font-medium text-gray-800">Nutritional Information</h4>
+                <h4 className={`font-medium ${isDarkMode ? 'text-dark-text' : 'text-gray-800'}`}>Nutritional Information</h4>
               </div>
-              <p className="text-gray-700 mb-6">{result.nutritionInfo}</p>
+              <p className={`${isDarkMode ? 'text-gray-300' : 'text-gray-700'} mb-6`}>{result.nutritionInfo}</p>
               
               <div className="flex items-center mb-3">
                 <svg className="w-5 h-5 text-rose-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
-                <h4 className="font-medium text-gray-800">Health Benefits</h4>
+                <h4 className={`font-medium ${isDarkMode ? 'text-dark-text' : 'text-gray-800'}`}>Health Benefits</h4>
               </div>
-              <ul className="space-y-2 text-gray-700">
+              <ul className={`space-y-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                 {result.benefits.map((benefit, index) => (
                   <li key={index} className="flex items-start">
                     <svg className="w-4 h-4 text-rose-500 mt-1 mr-2" fill="currentColor" viewBox="0 0 20 20">
@@ -164,12 +166,12 @@ const NutritionalFactFinder = () => {
                 <svg className="w-5 h-5 text-rose-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" />
                 </svg>
-                <h4 className="font-medium text-gray-800">Potential Concerns</h4>
+                <h4 className={`font-medium ${isDarkMode ? 'text-dark-text' : 'text-gray-800'}`}>Potential Concerns</h4>
               </div>
-              <ul className="space-y-3 text-gray-700">
+              <ul className={`space-y-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                 {result.concerns.map((concern, index) => (
                   <li key={index} className="flex items-start">
-                    <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-rose-100 text-rose-800 text-sm font-medium mr-3">
+                    <span className={`inline-flex items-center justify-center h-6 w-6 rounded-full ${isDarkMode ? 'bg-gray-700 text-rose-400' : 'bg-rose-100 text-rose-800'} text-sm font-medium mr-3`}>
                       {index + 1}
                     </span>
                     {concern}
@@ -182,17 +184,17 @@ const NutritionalFactFinder = () => {
                   <svg className="w-5 h-5 text-rose-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9z" clipRule="evenodd" />
                   </svg>
-                  <h4 className="font-medium text-gray-800">Recommended Consumption</h4>
+                  <h4 className={`font-medium ${isDarkMode ? 'text-dark-text' : 'text-gray-800'}`}>Recommended Consumption</h4>
                 </div>
-                <p className="text-gray-700 mb-6">{result.recommendation}</p>
+                <p className={`${isDarkMode ? 'text-gray-300' : 'text-gray-700'} mb-6`}>{result.recommendation}</p>
                 
                 <div className="flex items-center mb-3">
                   <svg className="w-5 h-5 text-rose-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9z" clipRule="evenodd" />
                   </svg>
-                  <h4 className="font-medium text-gray-800">Overall Assessment</h4>
+                  <h4 className={`font-medium ${isDarkMode ? 'text-dark-text' : 'text-gray-800'}`}>Overall Assessment</h4>
                 </div>
-                <p className="text-gray-700">{result.assessment}</p>
+                <p className={isDarkMode ? 'text-gray-300' : 'text-gray-700'}>{result.assessment}</p>
               </div>
             </div>
           </div>

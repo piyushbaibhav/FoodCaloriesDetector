@@ -24,29 +24,28 @@ import {
 } from "recharts";
 import dayjs from "dayjs";
 import { getAuth } from "firebase/auth";
+import { useDarkMode } from "../../context/DarkModeContext";
 
 // Chart Icon Component
 const ChartIcon = () => (
-  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-    <path d="M3.5 18.49l6-6.01 4 4L22 6.92l-1.41-1.41-7.09 7.97-4-4L2 16.99z"/>
+  <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z" />
   </svg>
 );
 
 // Custom tooltip for charts
-const CustomTooltip = ({ active, payload, label, selectedNutrient }) => {
+const CustomTooltip = ({ active, payload, label }) => {
+  const { isDarkMode } = useDarkMode();
+  
   if (active && payload && payload.length) {
-    const data = payload[0].payload;
-    const unit = selectedNutrient === "calories" ? "kcal" : "g";
-    const formattedValue = selectedNutrient === "calories" 
-      ? Math.round(data[selectedNutrient]) 
-      : data[selectedNutrient].toFixed(1);
-    
     return (
-      <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-md">
-        <p className="font-medium text-gray-800">{label}</p>
-        <p className="text-green-600 font-semibold">
-          {selectedNutrient.charAt(0).toUpperCase() + selectedNutrient.slice(1)}: {formattedValue} {unit}
-        </p>
+      <div className={`p-3 rounded-lg shadow-lg ${isDarkMode ? 'bg-dark-chart-tooltip-bg text-dark-chart-tooltip-text border border-dark-chart-tooltip-border' : 'bg-white text-gray-800 border border-gray-200'}`}>
+        <p className="font-semibold">{label}</p>
+        {payload.map((entry, index) => (
+          <p key={index} className="text-sm" style={{ color: entry.color }}>
+            {entry.name}: {entry.value.toFixed(1)}
+          </p>
+        ))}
       </div>
     );
   }
@@ -61,6 +60,7 @@ const CalorieChart = () => {
   const [selectedNutrient, setSelectedNutrient] = useState("calories");
   const [chartType, setChartType] = useState("bar");
   const auth = getAuth();
+  const { isDarkMode } = useDarkMode();
 
   const extractNutrients = (nutritionInfo) => {
     if (!nutritionInfo || typeof nutritionInfo !== "string") {
@@ -217,57 +217,56 @@ const CalorieChart = () => {
   };
 
   return (
-    <div className="p-6 bg-white rounded-xl shadow-md">
-      <div className="flex items-center justify-center mb-6">
-        <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mr-3">
-          <ChartIcon className="text-green-600" />
+    <div className="bg-white dark:bg-dark-card p-6 rounded-xl shadow-md">
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-2">
+          <ChartIcon className="text-green-600 dark:text-green-400" />
+          <h2 className="text-xl font-semibold text-gray-800 dark:text-dark-text">
+            Calorie History
+          </h2>
         </div>
-        <h2 className="text-2xl font-bold text-gray-800">
-          Nutrition <span className="text-green-600">History</span>
-        </h2>
-      </div>
-
-      <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-        <div className="flex space-x-2">
+        <div className="flex gap-2">
           <button
             onClick={() => setFilter("today")}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+            className={`p-2 rounded-lg ${
               filter === "today"
-                ? "bg-green-600 text-white shadow-md"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                ? "bg-green-600 text-white"
+                : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
             }`}
           >
             Today
           </button>
           <button
             onClick={() => setFilter("7days")}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+            className={`p-2 rounded-lg ${
               filter === "7days"
-                ? "bg-green-600 text-white shadow-md"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                ? "bg-green-600 text-white"
+                : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
             }`}
           >
             7 Days
           </button>
           <button
             onClick={() => setFilter("30days")}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+            className={`p-2 rounded-lg ${
               filter === "30days"
-                ? "bg-green-600 text-white shadow-md"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                ? "bg-green-600 text-white"
+                : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
             }`}
           >
             30 Days
           </button>
         </div>
+      </div>
 
+      <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
         <div className="flex space-x-2">
           <button
             onClick={() => setChartType("bar")}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
               chartType === "bar"
                 ? "bg-green-600 text-white shadow-md"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
             }`}
           >
             Bar
@@ -277,7 +276,7 @@ const CalorieChart = () => {
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
               chartType === "area"
                 ? "bg-green-600 text-white shadow-md"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
             }`}
           >
             Area
@@ -287,7 +286,7 @@ const CalorieChart = () => {
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
               chartType === "line"
                 ? "bg-green-600 text-white shadow-md"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
             }`}
           >
             Line
@@ -300,7 +299,7 @@ const CalorieChart = () => {
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
               selectedNutrient === "calories"
                 ? "bg-green-600 text-white shadow-md"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
             }`}
           >
             Calories
@@ -310,7 +309,7 @@ const CalorieChart = () => {
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
               selectedNutrient === "protein"
                 ? "bg-green-600 text-white shadow-md"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
             }`}
           >
             Protein
@@ -320,7 +319,7 @@ const CalorieChart = () => {
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
               selectedNutrient === "carbs"
                 ? "bg-green-600 text-white shadow-md"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
             }`}
           >
             Carbs
@@ -330,7 +329,7 @@ const CalorieChart = () => {
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
               selectedNutrient === "fat"
                 ? "bg-green-600 text-white shadow-md"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
             }`}
           >
             Fat
@@ -338,8 +337,8 @@ const CalorieChart = () => {
         </div>
       </div>
 
-      <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-        <ResponsiveContainer width="100%" height={400}>
+      <div className="h-[400px]">
+        <ResponsiveContainer width="100%" height="100%">
           {chartType === "bar" ? (
             <BarChart
               data={chartData}
@@ -367,18 +366,18 @@ const CalorieChart = () => {
                   <stop offset="95%" stopColor="#ec4899" stopOpacity={0.1}/>
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+              <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? "#404040" : "#e5e7eb"} />
               <XAxis 
                 dataKey="date" 
-                tick={{ fill: '#6b7280' }}
-                axisLine={{ stroke: '#e5e7eb' }}
+                tick={{ fill: isDarkMode ? "#e5e5e5" : "#333333" }}
+                axisLine={{ stroke: isDarkMode ? "#e5e5e5" : "#333333" }}
               />
               <YAxis 
-                tick={{ fill: '#6b7280' }}
-                axisLine={{ stroke: '#e5e7eb' }}
+                tick={{ fill: isDarkMode ? "#e5e5e5" : "#333333" }}
+                axisLine={{ stroke: isDarkMode ? "#e5e5e5" : "#333333" }}
                 domain={[0, 'dataMax + 10']}
               />
-              <Tooltip content={<CustomTooltip selectedNutrient={selectedNutrient} />} />
+              <Tooltip content={<CustomTooltip />} />
               <Legend />
               <Bar 
                 dataKey={selectedNutrient} 
@@ -416,18 +415,18 @@ const CalorieChart = () => {
                   <stop offset="95%" stopColor="#ec4899" stopOpacity={0.1}/>
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+              <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? "#404040" : "#e5e7eb"} />
               <XAxis 
                 dataKey="date" 
-                tick={{ fill: '#6b7280' }}
-                axisLine={{ stroke: '#e5e7eb' }}
+                tick={{ fill: isDarkMode ? "#e5e5e5" : "#333333" }}
+                axisLine={{ stroke: isDarkMode ? "#e5e5e5" : "#333333" }}
               />
               <YAxis 
-                tick={{ fill: '#6b7280' }}
-                axisLine={{ stroke: '#e5e7eb' }}
+                tick={{ fill: isDarkMode ? "#e5e5e5" : "#333333" }}
+                axisLine={{ stroke: isDarkMode ? "#e5e5e5" : "#333333" }}
                 domain={[0, 'dataMax + 10']}
               />
-              <Tooltip content={<CustomTooltip selectedNutrient={selectedNutrient} />} />
+              <Tooltip content={<CustomTooltip />} />
               <Legend />
               <Area 
                 type="monotone" 
@@ -445,18 +444,18 @@ const CalorieChart = () => {
               data={chartData}
               margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
             >
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+              <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? "#404040" : "#e5e7eb"} />
               <XAxis 
                 dataKey="date" 
-                tick={{ fill: '#6b7280' }}
-                axisLine={{ stroke: '#e5e7eb' }}
+                tick={{ fill: isDarkMode ? "#e5e5e5" : "#333333" }}
+                axisLine={{ stroke: isDarkMode ? "#e5e5e5" : "#333333" }}
               />
               <YAxis 
-                tick={{ fill: '#6b7280' }}
-                axisLine={{ stroke: '#e5e7eb' }}
+                tick={{ fill: isDarkMode ? "#e5e5e5" : "#333333" }}
+                axisLine={{ stroke: isDarkMode ? "#e5e5e5" : "#333333" }}
                 domain={[0, 'dataMax + 10']}
               />
-              <Tooltip content={<CustomTooltip selectedNutrient={selectedNutrient} />} />
+              <Tooltip content={<CustomTooltip />} />
               <Legend />
               <Line 
                 type="monotone" 

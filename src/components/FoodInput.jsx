@@ -1,6 +1,7 @@
 import React, { useState, useRef } from "react";
 import { collection, addDoc, serverTimestamp, doc } from "firebase/firestore";
 import { db } from "../firebase";
+import { useDarkMode } from "../context/DarkModeContext";
 
 const GEMINI_API_KEY = "AIzaSyA40OoIi5AEkJhyehzX_1hvXGlSAL-DEJE";
 
@@ -34,6 +35,7 @@ const FoodInput = () => {
   const [loading, setLoading] = useState(false);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
+  const { isDarkMode } = useDarkMode();
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -224,26 +226,30 @@ Note: For complex dishes, provide approximate values based on typical recipes an
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Food Name Input */}
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700">
+          <label className={`block text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
             Food Name
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <FoodIcon className="text-green-600" />
+              <FoodIcon className={isDarkMode ? "text-green-400" : "text-green-600"} />
             </div>
             <input
               type="text"
               value={foodName}
               onChange={(e) => setFoodName(e.target.value)}
               placeholder="Enter food name"
-              className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+                isDarkMode 
+                  ? 'bg-dark-input border-gray-700 text-gray-200 placeholder-gray-400' 
+                  : 'bg-white border-gray-200 text-gray-800 placeholder-gray-500'
+              }`}
             />
           </div>
         </div>
 
         {/* Quantity Input */}
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700">
+          <label className={`block text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
             Quantity
           </label>
           <input
@@ -251,14 +257,18 @@ Note: For complex dishes, provide approximate values based on typical recipes an
             value={quantity}
             onChange={(e) => setQuantity(e.target.value)}
             placeholder="e.g., 1 cup, 200g, 2 pieces"
-            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+              isDarkMode 
+                ? 'bg-dark-input border-gray-700 text-gray-200 placeholder-gray-400' 
+                : 'bg-white border-gray-200 text-gray-800 placeholder-gray-500'
+            }`}
           />
         </div>
       </div>
 
       {/* Image Upload Section */}
       <div className="space-y-4">
-        <label className="block text-sm font-medium text-gray-700">
+        <label className={`block text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
           Food Image (Optional)
         </label>
         
@@ -267,15 +277,23 @@ Note: For complex dishes, provide approximate values based on typical recipes an
           <button
             type="button"
             onClick={startCamera}
-            className="flex items-center justify-center gap-2 px-4 py-3 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-all duration-300 font-medium text-gray-700 shadow-sm"
+            className={`flex items-center justify-center gap-2 px-4 py-3 border rounded-lg hover:bg-gray-50 transition-all duration-300 font-medium shadow-sm ${
+              isDarkMode 
+                ? 'bg-dark-input border-gray-700 text-gray-200 hover:bg-gray-700' 
+                : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
+            }`}
           >
-            <CameraIcon className="text-green-600" />
+            <CameraIcon className={isDarkMode ? "text-green-400" : "text-green-600"} />
             <span>Take Photo</span>
           </button>
           
           {/* Upload Button */}
-          <label className="flex items-center justify-center gap-2 px-4 py-3 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-all duration-300 font-medium text-gray-700 shadow-sm cursor-pointer">
-            <UploadIcon className="text-green-600" />
+          <label className={`flex items-center justify-center gap-2 px-4 py-3 border rounded-lg hover:bg-gray-50 transition-all duration-300 font-medium shadow-sm cursor-pointer ${
+            isDarkMode 
+              ? 'bg-dark-input border-gray-700 text-gray-200 hover:bg-gray-700' 
+              : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
+          }`}>
+            <UploadIcon className={isDarkMode ? "text-green-400" : "text-green-600"} />
             <span>Upload Image</span>
             <input
               type="file"
@@ -292,7 +310,9 @@ Note: For complex dishes, provide approximate values based on typical recipes an
             <video
               ref={videoRef}
               autoPlay
-              className="w-full max-w-md mx-auto rounded-lg border border-gray-200"
+              className={`w-full max-w-md mx-auto rounded-lg border ${
+                isDarkMode ? 'border-gray-700' : 'border-gray-200'
+              }`}
             />
             <canvas ref={canvasRef} className="hidden" width="300" height="200" />
             <div className="flex justify-center gap-4">
@@ -304,7 +324,11 @@ Note: For complex dishes, provide approximate values based on typical recipes an
               </button>
               <button
                 onClick={stopCamera}
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all duration-300"
+                className={`px-4 py-2 rounded-lg transition-all duration-300 ${
+                  isDarkMode 
+                    ? 'bg-gray-700 text-gray-200 hover:bg-gray-600' 
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
               >
                 Cancel
               </button>
@@ -318,11 +342,17 @@ Note: For complex dishes, provide approximate values based on typical recipes an
             <img
               src={URL.createObjectURL(image)}
               alt="Food"
-              className="w-full max-w-md mx-auto rounded-lg border border-gray-200"
+              className={`w-full max-w-md mx-auto rounded-lg border ${
+                isDarkMode ? 'border-gray-700' : 'border-gray-200'
+              }`}
             />
             <button
               onClick={() => setImage(null)}
-              className="mt-2 px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-all duration-300"
+              className={`mt-2 px-4 py-2 rounded-lg transition-all duration-300 ${
+                isDarkMode 
+                  ? 'bg-red-900/30 text-red-400 hover:bg-red-900/50' 
+                  : 'bg-red-100 text-red-600 hover:bg-red-200'
+              }`}
             >
               Remove Image
             </button>
@@ -334,18 +364,30 @@ Note: For complex dishes, provide approximate values based on typical recipes an
       <button
         onClick={handleSubmit}
         disabled={loading}
-        className="w-full bg-green-600 text-white py-3 rounded-lg shadow-md hover:bg-green-700 hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-300 font-medium text-lg disabled:opacity-50 disabled:cursor-not-allowed"
+        className={`w-full py-3 rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-300 font-medium text-lg disabled:opacity-50 disabled:cursor-not-allowed ${
+          isDarkMode 
+            ? 'bg-green-500 text-white hover:bg-green-600' 
+            : 'bg-green-600 text-white hover:bg-green-700'
+        }`}
       >
         {loading ? "Processing..." : "Add Food Entry"}
       </button>
 
       {/* Nutrition Data Display */}
       {nutritionData && (
-        <div className="mt-6 p-4 bg-green-50 rounded-lg border border-green-100">
-          <h3 className="text-lg font-medium text-green-800 mb-2">
+        <div className={`mt-6 p-4 rounded-lg border ${
+          isDarkMode 
+            ? 'bg-gray-800/50 border-gray-700' 
+            : 'bg-green-50 border-green-100'
+        }`}>
+          <h3 className={`text-lg font-medium mb-2 ${
+            isDarkMode ? 'text-green-400' : 'text-green-800'
+          }`}>
             Nutritional Information
           </h3>
-          <pre className="whitespace-pre-wrap text-gray-700">{nutritionData}</pre>
+          <pre className={`whitespace-pre-wrap ${
+            isDarkMode ? 'text-gray-300' : 'text-gray-700'
+          }`}>{nutritionData}</pre>
         </div>
       )}
     </div>

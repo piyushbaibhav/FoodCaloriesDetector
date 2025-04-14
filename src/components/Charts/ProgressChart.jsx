@@ -8,6 +8,8 @@ import {
   where,
   Timestamp,
 } from "firebase/firestore";
+import { useDarkMode } from "../../context/DarkModeContext";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from "recharts";
 
 // Progress Icon Component
 const ProgressIcon = () => (
@@ -24,7 +26,25 @@ const SuccessIcon = () => (
   </svg>
 );
 
+// Custom tooltip for progress chart
+const CustomTooltip = ({ active, payload, label }) => {
+  const { isDarkMode } = useDarkMode();
+  
+  if (active && payload && payload.length) {
+    return (
+      <div className={`p-3 rounded-lg shadow-lg ${isDarkMode ? 'bg-dark-chart-tooltip-bg text-dark-chart-tooltip-text border border-dark-chart-tooltip-border' : 'bg-white text-gray-800 border border-gray-200'}`}>
+        <p className="font-semibold">{label}</p>
+        <p className="text-sm" style={{ color: payload[0].color }}>
+          Progress: {payload[0].value.toFixed(1)}%
+        </p>
+      </div>
+    );
+  }
+  return null;
+};
+
 const ProgressChart = ({ label, nutrientKey, goal }) => {
+  const { isDarkMode } = useDarkMode();
   const [current, setCurrent] = useState(0);
   const [color, setColor] = useState("#10b981"); // Default green
   const [showSuccess, setShowSuccess] = useState(false);
@@ -82,55 +102,45 @@ const ProgressChart = ({ label, nutrientKey, goal }) => {
   const formattedGoal = nutrientKey === "calories" ? Math.round(goal) : goal.toFixed(1);
   const isComplete = percent >= 100;
 
+  const data = [
+    { name: "Mon", progress: 75 },
+    { name: "Tue", progress: 85 },
+    { name: "Wed", progress: 65 },
+    { name: "Thu", progress: 90 },
+    { name: "Fri", progress: 80 },
+    { name: "Sat", progress: 70 },
+    { name: "Sun", progress: 95 },
+  ];
+
   return (
-    <div className="mb-6 p-4 bg-white rounded-lg border border-gray-200 shadow-sm relative">
-      {isComplete && (
-        <div className="absolute -top-3 -right-3 w-12 h-12 bg-green-500 rounded-full flex items-center justify-center shadow-lg animate-bounce">
-          <SuccessIcon className="text-white" />
-        </div>
-      )}
-      
-      <div className="flex items-center mb-3">
-        <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mr-3">
-          <ProgressIcon className="text-green-600" />
-        </div>
-        <h3 className="font-semibold text-gray-800">
-          {label}
-        </h3>
+    <div className="bg-white dark:bg-dark-card p-6 rounded-xl shadow-md">
+      <h3 className="text-lg font-semibold text-gray-800 dark:text-dark-text mb-4">
+        {label} Progress
+      </h3>
+      <div className="h-[300px]">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={data}>
+            <CartesianGrid 
+              strokeDasharray="3 3" 
+              stroke={isDarkMode ? "#404040" : "#e5e7eb"} 
+            />
+            <XAxis 
+              dataKey="name" 
+              stroke={isDarkMode ? "#e5e5e5" : "#333333"} 
+            />
+            <YAxis 
+              stroke={isDarkMode ? "#e5e5e5" : "#333333"} 
+              domain={[0, 100]}
+            />
+            <Tooltip content={<CustomTooltip />} />
+            <Bar 
+              dataKey="progress" 
+              fill={isDarkMode ? "#4a9eff" : "#3b82f6"} 
+              radius={[4, 4, 0, 0]}
+            />
+          </BarChart>
+        </ResponsiveContainer>
       </div>
-      
-      <div className="flex justify-between items-center mb-2">
-        <div className="text-sm text-gray-500">
-          {formattedCurrent} / {formattedGoal} {unit}
-        </div>
-        <div className="text-sm font-medium" style={{ color }}>
-          {percent}%
-        </div>
-      </div>
-      
-      <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
-        <div
-          className="h-full rounded-full transition-all duration-1000 ease-out"
-          style={{ 
-            width: `${percent}%`,
-            backgroundColor: color,
-            boxShadow: `0 0 10px ${color}40`
-          }}
-        />
-      </div>
-      
-      <div className="mt-2 flex justify-between text-xs text-gray-500">
-        <span>0 {unit}</span>
-        <span>{formattedGoal} {unit}</span>
-      </div>
-      
-      {isComplete && (
-        <div className="mt-3 text-center">
-          <span className="inline-block px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium animate-pulse">
-            Goal Achieved! 🎉
-          </span>
-        </div>
-      )}
     </div>
   );
 };

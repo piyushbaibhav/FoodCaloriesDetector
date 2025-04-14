@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
+import DarkModeToggle from "../components/DarkModeToggle";
 
 // Nutrition-Focused SVG Icons
 const NutritionFactsIcon = () => (
@@ -48,18 +49,18 @@ const FeatureCard = ({ icon, title, bg, text, description }) => {
 
   return (
     <div 
-      className={`${bg} p-5 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 h-40 relative overflow-hidden`}
+      className={`${bg} dark:bg-dark-card p-5 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 h-40 relative overflow-hidden`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       <div className={`transition-all duration-300 ${isHovered ? 'opacity-0 -translate-y-full' : 'opacity-100 translate-y-0'}`}>
-        <div className={`${text} mb-3 flex justify-center`}>
+        <div className={`${text} dark:text-green-400 mb-3 flex justify-center`}>
           {icon}
         </div>
-        <h3 className="font-medium text-gray-700">{title}</h3>
+        <h3 className="font-medium text-gray-700 dark:text-gray-200">{title}</h3>
       </div>
       <div className={`absolute inset-0 p-5 flex items-center justify-center transition-all duration-300 ${isHovered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-full'}`}>
-        <p className="text-sm text-center text-gray-600">
+        <p className="text-sm text-center text-gray-600 dark:text-gray-300">
           {description}
         </p>
       </div>
@@ -72,38 +73,38 @@ export default function Welcome() {
     { 
       icon: <NutritionFactsIcon />, 
       title: "Nutrition Facts", 
-      bg: "bg-green-50", 
+      bg: "bg-green-50 dark:bg-green-900/20", 
       text: "text-green-600",
       description: "Get detailed nutritional information for all your meals and track your daily intake."
     },
     { 
       icon: <ProgressIcon />, 
       title: "Daily Progress", 
-      bg: "bg-blue-50", 
+      bg: "bg-blue-50 dark:bg-blue-900/20", 
       text: "text-blue-600",
       description: "Monitor your progress towards health goals with intuitive charts and metrics."
     },
     { 
       icon: <ImagePredictionIcon />, 
       title: "Image Prediction", 
-      bg: "bg-purple-50", 
+      bg: "bg-purple-50 dark:bg-purple-900/20", 
       text: "text-purple-600",
       description: "Simply take a photo of your meal and get instant nutritional analysis."
     },
     { 
       icon: <FoodDatabaseIcon />, 
       title: "Food Database", 
-      bg: "bg-amber-50", 
+      bg: "bg-amber-50 dark:bg-amber-900/20", 
       text: "text-amber-600",
       description: "Access our comprehensive database of foods with accurate nutritional values."
     }
   ];
 
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center bg-[#f8fafc] text-gray-900 relative overflow-hidden">
+    <div className="min-h-screen flex flex-col justify-center items-center bg-[#f8fafc] dark:bg-dark-bg text-gray-900 dark:text-gray-100 relative overflow-hidden">
       {/* Decorative SVG Vectors */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-0 right-0 w-1/3 h-full bg-[#e0f2fe] opacity-20 -rotate-12 transform origin-bottom-right"></div>
+        <div className="absolute top-0 right-0 w-1/3 h-full bg-[#e0f2fe] dark:bg-gray-800 opacity-20 -rotate-12 transform origin-bottom-right"></div>
         <WaveVector />
       </div>
 
@@ -111,30 +112,30 @@ export default function Welcome() {
       <div className="z-10 text-center px-4 max-w-4xl">
         {/* Logo/Icon */}
         <div className="mb-8 flex justify-center">
-          <div className="w-24 h-24 bg-green-100 rounded-2xl flex items-center justify-center shadow-sm">
-            <NutritionLogo className="text-green-600" />
+          <div className="w-24 h-24 bg-green-100 dark:bg-green-900/20 rounded-2xl flex items-center justify-center shadow-sm">
+            <NutritionLogo className="text-green-600 dark:text-green-400" />
           </div>
         </div>
 
         {/* Main Heading */}
-        <h1 className="text-4xl md:text-5xl font-bold mb-6 text-gray-800">
-          Welcome to <span className="text-green-600">NutriTrack</span>
+        <h1 className="text-4xl md:text-5xl font-bold mb-6 text-gray-800 dark:text-gray-100">
+          Welcome to <span className="text-green-600 dark:text-green-400">NutriTrack</span>
         </h1>
 
         {/* Subheading */}
-        <p className="text-lg md:text-xl mb-10 text-gray-600 font-light max-w-2xl mx-auto">
+        <p className="text-lg md:text-xl mb-10 text-gray-600 dark:text-gray-300 font-light max-w-2xl mx-auto">
           Track your nutrition, achieve your goals, and build healthier habits with our intelligent food analysis platform.
         </p>
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row justify-center gap-4 mb-16">
           <Link to="/signup">
-            <button className="px-8 py-3 bg-green-600 text-white rounded-lg shadow-md hover:bg-green-700 hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-300 font-medium text-lg">
+            <button className="px-8 py-3 bg-green-600 dark:bg-green-500 text-white rounded-lg shadow-md hover:bg-green-700 dark:hover:bg-green-600 hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-300 font-medium text-lg">
               Get Started - It's Free
             </button>
           </Link>
           <Link to="/login">
-            <button className="px-8 py-3 bg-white text-green-600 border border-green-100 rounded-lg hover:bg-green-50 transition-all duration-300 font-medium text-lg shadow-sm">
+            <button className="px-8 py-3 bg-white dark:bg-dark-card text-green-600 dark:text-green-400 border border-green-100 dark:border-gray-700 rounded-lg hover:bg-green-50 dark:hover:bg-gray-800 transition-all duration-300 font-medium text-lg shadow-sm">
               Existing User? Login
             </button>
           </Link>
@@ -154,6 +155,7 @@ export default function Welcome() {
           ))}
         </div>
       </div>
+      <DarkModeToggle />
     </div>
   );
 }
