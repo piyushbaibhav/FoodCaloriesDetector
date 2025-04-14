@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { collection, query, orderBy, getDocs, doc } from 'firebase/firestore';
+import { collection, query, orderBy, getDocs, doc, deleteDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { getAuth } from 'firebase/auth';
 import dayjs from 'dayjs';
@@ -7,6 +7,8 @@ import dayjs from 'dayjs';
 const FoodLog = () => {
   const [foodEntries, setFoodEntries] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedEntry, setSelectedEntry] = useState(null);
+  const [showModal, setShowModal] = useState(false);
   const auth = getAuth();
 
   const extractNutrients = (nutritionInfo) => {
@@ -78,6 +80,33 @@ const FoodLog = () => {
     fetchFoodEntries();
   }, [auth.currentUser]);
 
+  const handleDelete = async (entryId, date) => {
+    try {
+      const userId = auth.currentUser?.uid;
+      if (!userId) return;
+
+      const entryRef = doc(db, "users", userId, "foodEntries", entryId);
+      await deleteDoc(entryRef);
+
+      // Update local state
+      setFoodEntries(prev => {
+        const newEntries = { ...prev };
+        newEntries[date] = newEntries[date].filter(entry => entry.id !== entryId);
+        if (newEntries[date].length === 0) {
+          delete newEntries[date];
+        }
+        return newEntries;
+      });
+    } catch (error) {
+      console.error('Error deleting food entry:', error);
+    }
+  };
+
+  const handleEntryClick = (entry) => {
+    setSelectedEntry(entry);
+    setShowModal(true);
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -105,7 +134,8 @@ const FoodLog = () => {
                   {entries.map((entry) => (
                     <div
                       key={entry.id}
-                      className="flex justify-between items-center p-3 bg-gray-50 rounded-lg"
+                      className="flex justify-between items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors"
+                      onClick={() => handleEntryClick(entry)}
                     >
                       <div>
                         <h4 className="font-medium text-gray-800">{entry.foodName}</h4>
@@ -113,19 +143,82 @@ const FoodLog = () => {
                           {dayjs(entry.timestamp).format('h:mm A')}
                         </p>
                       </div>
-                      <div className="text-right">
-                        <p className="font-medium text-green-600">
-                          {entry.nutrition.calories} calories
-                        </p>
-                        <p className="text-sm text-gray-600">
-                          {entry.quantity}
-                        </p>
+                      <div className="flex items-center gap-4">
+                        <div className="text-right">
+                          <p className="font-medium text-green-600">
+                            {entry.nutrition.calories} calories
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            {entry.quantity}
+                          </p>
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDelete(entry.id, date);
+                          }}
+                          className="text-red-500 hover:text-red-700 transition-colors"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                          </svg>
+                        </button>
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Nutrition Details Modal */}
+      {showModal && selectedEntry && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold text-gray-800">{selectedEntry.foodName}</h3>
+              <button
+                onClick={() => setShowModal(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-gray-50 p-3 rounded-lg">
+                  <p className="text-sm text-gray-600">Calories</p>
+                  <p className="font-semibold text-green-600">{selectedEntry.nutrition.calories} kcal</p>
+                </div>
+                <div className="bg-gray-50 p-3 rounded-lg">
+                  <p className="text-sm text-gray-600">Protein</p>
+                  <p className="font-semibold text-gray-800">{selectedEntry.nutrition.protein}g</p>
+                </div>
+                <div className="bg-gray-50 p-3 rounded-lg">
+                  <p className="text-sm text-gray-600">Fat</p>
+                  <p className="font-semibold text-gray-800">{selectedEntry.nutrition.fat}g</p>
+                </div>
+                <div className="bg-gray-50 p-3 rounded-lg">
+                  <p className="text-sm text-gray-600">Carbs</p>
+                  <p className="font-semibold text-gray-800">{selectedEntry.nutrition.carbs}g</p>
+                </div>
+                <div className="bg-gray-50 p-3 rounded-lg">
+                  <p className="text-sm text-gray-600">Fiber</p>
+                  <p className="font-semibold text-gray-800">{selectedEntry.nutrition.fiber}g</p>
+                </div>
+                <div className="bg-gray-50 p-3 rounded-lg">
+                  <p className="text-sm text-gray-600">Quantity</p>
+                  <p className="font-semibold text-gray-800">{selectedEntry.quantity}</p>
+                </div>
+              </div>
+              <p className="text-sm text-gray-600 mt-4">
+                Added on {dayjs(selectedEntry.timestamp).format('MMM D, YYYY h:mm A')}
+              </p>
+            </div>
           </div>
         </div>
       )}
