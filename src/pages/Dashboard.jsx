@@ -10,6 +10,7 @@ import NutritionPieChart from "../components/Charts/NutritionPieChart";
 import NutritionalFactFinder from "../components/NutritionalFactFinder";
 import FoodLog from "../components/FoodLog";
 import AINutritionistChat from "../components/AINutritionistChat";
+import TrackerDashboard from "../components/TrackerDashboard";
 
 // Decorative SVG Vector
 const WaveVector = () => (
@@ -43,6 +44,12 @@ const Dashboard = () => {
 
   const renderSection = () => {
     switch (section) {
+      case "tracker":
+        return (
+          <div className="mt-10 w-full max-w-5xl">
+            <TrackerDashboard />
+          </div>
+        );
       case "nutritionist":
         return (
           <div className="mt-10 w-full max-w-5xl bg-white p-6 rounded-xl shadow-md">
