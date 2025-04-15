@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import DarkModeToggle from "../components/DarkModeToggle";
+import Spline from '@splinetool/react-spline';
 
 // Nutrition-Focused SVG Icons
 const NutritionFactsIcon = () => (
@@ -69,6 +70,39 @@ const FeatureCard = ({ icon, title, bg, text, description }) => {
 };
 
 export default function Welcome() {
+  const splineRef = useRef(null);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      setMousePosition({
+        x: (e.clientX / window.innerWidth) * 2 - 1,
+        y: -(e.clientY / window.innerHeight) * 2 + 1
+      });
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
+  const onLoad = (splineApp) => {
+    splineRef.current = splineApp;
+    
+    // Update object position based on mouse movement
+    const animate = () => {
+      if (splineRef.current) {
+        const object = splineRef.current.findObjectByName('Object');
+        if (object) {
+          // Smoothly move the object towards the mouse position
+          object.position.x += (mousePosition.x * 2 - object.position.x) * 0.1;
+          object.position.y += (mousePosition.y * 2 - object.position.y) * 0.1;
+        }
+      }
+      requestAnimationFrame(animate);
+    };
+    animate();
+  };
+
   const features = [
     { 
       icon: <NutritionFactsIcon />, 
@@ -106,6 +140,15 @@ export default function Welcome() {
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-0 right-0 w-1/3 h-full bg-[#e0f2fe] dark:bg-gray-800 opacity-20 -rotate-12 transform origin-bottom-right"></div>
         <WaveVector />
+      </div>
+
+      {/* Spline Animation */}
+      <div className="absolute inset-0 w-full h-full pointer-events-auto">
+        <Spline
+          scene="https://prod.spline.design/U6ugXkhxuIuAgLWc/scene.splinecode"
+          className="w-full h-full"
+          onLoad={onLoad}
+        />
       </div>
 
       {/* Main Content */}
