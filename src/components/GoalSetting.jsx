@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { db } from "../firebase";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
+import { useDarkMode } from "../context/DarkModeContext";
 
 // Goal Icon Component
 const GoalIcon = () => (
@@ -16,6 +17,7 @@ const GoalSetting = ({ setDailyGoals, setGoalsSet }) => {
   const [fat, setFat] = useState(0);
   const [calories, setCalories] = useState(0);
   const [loading, setLoading] = useState(true);
+  const { isDarkMode } = useDarkMode();
 
   const auth = getAuth();
   const user = auth.currentUser;
@@ -75,71 +77,87 @@ const GoalSetting = ({ setDailyGoals, setGoalsSet }) => {
   if (loading) {
     return (
       <div className="w-full max-w-md mx-auto p-6">
-        <p className="text-center text-gray-600">Loading goals...</p>
+        <p className={`text-center ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Loading goals...</p>
       </div>
     );
   }
 
   return (
-    <div className="w-full max-w-md mx-auto bg-white p-6 rounded-xl shadow-md">
+    <div className={`w-full max-w-md mx-auto ${isDarkMode ? 'bg-dark-card' : 'bg-white'} p-6 rounded-xl shadow-md`}>
       <div className="flex items-center justify-center mb-6">
-        <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mr-3">
-          <GoalIcon className="text-green-600" />
+        <div className={`w-12 h-12 ${isDarkMode ? 'bg-green-900' : 'bg-green-100'} rounded-xl flex items-center justify-center mr-3`}>
+          <GoalIcon className={isDarkMode ? 'text-green-400' : 'text-green-600'} />
         </div>
-        <h2 className="text-2xl font-bold text-gray-800">
-          Set Your <span className="text-green-600">Daily Goals</span>
+        <h2 className={`text-2xl font-bold ${isDarkMode ? 'text-dark-text' : 'text-gray-800'}`}>
+          Set Your <span className={isDarkMode ? 'text-green-400' : 'text-green-600'}>Daily Goals</span>
         </h2>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700">
+          <label className={`block text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
             Carbs (g)
           </label>
           <input
             type="number"
             value={carbs}
             onChange={(e) => setCarbs(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            className={`w-full px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+              isDarkMode 
+                ? 'bg-gray-800 border-gray-700 text-gray-100' 
+                : 'bg-white border-gray-200 text-gray-800'
+            }`}
             required
           />
         </div>
 
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700">
+          <label className={`block text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
             Protein (g)
           </label>
           <input
             type="number"
             value={protein}
             onChange={(e) => setProtein(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            className={`w-full px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+              isDarkMode 
+                ? 'bg-gray-800 border-gray-700 text-gray-100' 
+                : 'bg-white border-gray-200 text-gray-800'
+            }`}
             required
           />
         </div>
 
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700">
+          <label className={`block text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
             Fat (g)
           </label>
           <input
             type="number"
             value={fat}
             onChange={(e) => setFat(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            className={`w-full px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+              isDarkMode 
+                ? 'bg-gray-800 border-gray-700 text-gray-100' 
+                : 'bg-white border-gray-200 text-gray-800'
+            }`}
             required
           />
         </div>
 
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700">
+          <label className={`block text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
             Calories (kcal)
           </label>
           <input
             type="number"
             value={calories}
             onChange={(e) => setCalories(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            className={`w-full px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+              isDarkMode 
+                ? 'bg-gray-800 border-gray-700 text-gray-100' 
+                : 'bg-white border-gray-200 text-gray-800'
+            }`}
             required
           />
         </div>
