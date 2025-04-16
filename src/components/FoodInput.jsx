@@ -2,18 +2,9 @@ import React, { useState, useRef } from "react";
 import { collection, addDoc, serverTimestamp, doc } from "firebase/firestore";
 import { db } from "../firebase";
 import { useDarkMode } from "../context/DarkModeContext";
+import Spline from '@splinetool/react-spline';
 
 const GEMINI_API_KEY = "AIzaSyA40OoIi5AEkJhyehzX_1hvXGlSAL-DEJE";
-
-// Loading Spinner Component
-const LoadingSpinner = () => (
-  <div className="flex justify-center items-center">
-    <div className="relative w-12 h-12">
-      <div className="absolute top-0 left-0 w-full h-full border-4 border-green-200 rounded-full"></div>
-      <div className="absolute top-0 left-0 w-full h-full border-4 border-green-600 rounded-full border-t-transparent animate-spin"></div>
-    </div>
-  </div>
-);
 
 // Food Icon Component
 const FoodIcon = () => (
@@ -144,6 +135,9 @@ Note: For complex dishes, provide approximate values based on typical recipes an
     setLoading(true);
 
     try {
+      // Create a promise that resolves after 2 seconds
+      const minimumLoadingTime = new Promise(resolve => setTimeout(resolve, 2000));
+
       let foodClass = foodName;
       let confidence = 1.0;
       let geminiInfo = "No nutritional information available";
@@ -163,13 +157,18 @@ Note: For complex dishes, provide approximate values based on typical recipes an
         }
 
         const data = await response.json();
-        foodClass = data.class; // Get the detected food class
-        setFoodName(foodClass); // Set the food name input to the detected class
+        foodClass = data.class;
+        setFoodName(foodClass);
         confidence = data.confidence;
       }
 
       // Get nutrition information from Gemini
-      geminiInfo = await getNutritionFromGemini(foodClass, quantity);
+      const geminiPromise = getNutritionFromGemini(foodClass, quantity);
+      
+      // Wait for both the minimum loading time and the API response
+      const [geminiResponse] = await Promise.all([geminiPromise, minimumLoadingTime]);
+      
+      geminiInfo = geminiResponse;
       
       // Set the nutrition data
       setNutritionData(geminiInfo);
@@ -380,14 +379,7 @@ Note: For complex dishes, provide approximate values based on typical recipes an
             : 'bg-green-600 text-white hover:bg-green-700'
         }`}
       >
-        {loading ? (
-          <div className="flex items-center justify-center gap-2">
-            <LoadingSpinner />
-            <span>Processing...</span>
-          </div>
-        ) : (
-          "Add Food Entry"
-        )}
+        Add Food Entry
       </button>
 
       {/* Nutrition Data Display */}
@@ -397,7 +389,9 @@ Note: For complex dishes, provide approximate values based on typical recipes an
             ? 'bg-gray-800/50 border-gray-700' 
             : 'bg-green-50 border-green-100'
         }`}>
-          <LoadingSpinner />
+          <div className="w-full h-64">
+            <Spline scene="https://prod.spline.design/wsu-PDzgyPSpoKcr/scene.splinecode" />
+          </div>
           <p className={`text-center ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
             Analyzing your food and fetching nutritional information...
           </p>
