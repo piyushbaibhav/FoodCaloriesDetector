@@ -157,7 +157,7 @@ Note: Use markdown formatting for **bold** text to emphasize key points.
   return (
     <>
       {/* Chat Component */}
-      <div className="w-1/2 h-full">
+      <div className="w-[60%] h-full">
         <div className="flex flex-col h-full">
           <div className="p-6 pb-0">
             <div className="flex items-center justify-center mb-6">
@@ -243,7 +243,7 @@ Note: Use markdown formatting for **bold** text to emphasize key points.
       </div>
 
       {/* Spline Animation - Completely Separate */}
-      <div className="w-1/2 h-full">
+      <div className="w-[40%] h-full">
         <Spline 
           scene="https://prod.spline.design/ZVnO7CFbDSv4Cy0c/scene.splinecode"
           className="w-full h-full"
