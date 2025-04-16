@@ -18,6 +18,16 @@ const NutritionIcon = () => (
   </svg>
 );
 
+// Loading Spinner Component
+const LoadingSpinner = () => (
+  <div className="flex justify-center items-center">
+    <div className="relative w-12 h-12">
+      <div className="absolute top-0 left-0 w-full h-full border-4 border-rose-200 rounded-full"></div>
+      <div className="absolute top-0 left-0 w-full h-full border-4 border-rose-600 rounded-full border-t-transparent animate-spin"></div>
+    </div>
+  </div>
+);
+
 const NutritionalFactFinder = () => {
   const [foodName, setFoodName] = useState('');
   const [loading, setLoading] = useState(false);
@@ -101,9 +111,16 @@ const NutritionalFactFinder = () => {
           <button
             type="submit"
             disabled={loading}
-            className="absolute right-0 top-0 h-full px-6 bg-rose-600 text-white rounded-r-lg hover:bg-rose-700 transition-colors duration-200 font-medium disabled:opacity-70 disabled:cursor-not-allowed"
+            className="absolute right-0 top-0 h-full px-6 bg-rose-600 text-white rounded-r-lg hover:bg-rose-700 transition-colors duration-200 font-medium disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
-            {loading ? 'Searching...' : 'Search'}
+            {loading ? (
+              <>
+                <LoadingSpinner />
+                <span>Searching...</span>
+              </>
+            ) : (
+              'Search'
+            )}
           </button>
         </div>
       </form>
@@ -120,8 +137,18 @@ const NutritionalFactFinder = () => {
         </div>
       )}
 
+      {/* Loading State */}
+      {loading && !error && (
+        <div className={`${isDarkMode ? 'bg-gray-800/50 border-gray-700' : 'bg-rose-50/50 border-rose-100'} p-8 rounded-lg border flex flex-col items-center justify-center gap-4`}>
+          <LoadingSpinner />
+          <p className={`text-center ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+            Analyzing nutritional information...
+          </p>
+        </div>
+      )}
+
       {/* Results Section */}
-      {result && (
+      {result && !loading && (
         <div className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-rose-50/50 border-rose-100'} p-6 rounded-lg border`}>
           <div className="flex items-center mb-4">
             <svg className="w-6 h-6 text-rose-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
