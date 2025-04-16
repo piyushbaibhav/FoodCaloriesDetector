@@ -1,70 +1,156 @@
-# Getting Started with Create React App
+# 🍽️ Food Calorie Tracker
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A Progressive Web App (PWA) that helps users track their daily meals, calories, and maintain a healthy lifestyle. Built with React, Firebase, and modern web technologies.
 
-## Available Scripts
+![Food Calorie Tracker Screenshot](public/screenshots/desktop.png)
 
-In the project directory, you can run:
+## ✨ Features
 
-### `npm start`
+- **Meal Tracking**: Log breakfast, lunch, and dinner with calorie counts
+- **BMI Calculator**: Track your Body Mass Index over time
+- **Smart Notifications**: Get reminders for meal logging
+- **Dark Mode**: Eye-friendly dark theme support
+- **Offline Support**: Works without internet connection
+- **PWA**: Installable on mobile and desktop devices
+- **Responsive Design**: Works on all screen sizes
+- **Data Visualization**: Beautiful charts for tracking progress
+- **Secure Authentication**: Firebase Authentication integration
+- **Cloud Storage**: Data synced across devices
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## 🚀 Getting Started
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### Prerequisites
 
-### `npm test`
+- Node.js (v14 or higher)
+- npm or yarn
+- Firebase account
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Installation
 
-### `npm run build`
+1. Clone the repository:
+```bash
+git clone https://github.com/piyushbaibhav/food-calorie.git
+cd food-calorie
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+2. Install dependencies:
+```bash
+npm install
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+3. Create a `.env` file in the root directory with your Firebase configuration:
+```env
+REACT_APP_FIREBASE_API_KEY=your_api_key
+REACT_APP_FIREBASE_AUTH_DOMAIN=your_auth_domain
+REACT_APP_FIREBASE_PROJECT_ID=your_project_id
+REACT_APP_FIREBASE_STORAGE_BUCKET=your_storage_bucket
+REACT_APP_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
+REACT_APP_FIREBASE_APP_ID=your_app_id
+REACT_APP_FIREBASE_MEASUREMENT_ID=your_measurement_id
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+4. Start the development server:
+```bash
+npm start
+```
 
-### `npm run eject`
+5. Build for production:
+```bash
+npm run build
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## 🛠️ Tech Stack
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+- **Frontend**: React, React Router, Tailwind CSS
+- **State Management**: React Context API
+- **Authentication**: Firebase Authentication
+- **Database**: Firebase Firestore
+- **Cloud Functions**: Firebase Cloud Functions
+- **Push Notifications**: Firebase Cloud Messaging
+- **Charts**: Recharts
+- **Image Processing**: TensorFlow.js
+- **AI Integration**: Google Generative AI
+- **PWA Support**: Service Workers, Web App Manifest
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+## 📱 PWA Features
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+- **Installable**: Add to home screen on mobile and desktop
+- **Offline Support**: Works without internet connection
+- **Push Notifications**: Get reminders for meal logging
+- **Responsive Design**: Adapts to all screen sizes
+- **Fast Loading**: Optimized performance
+- **Secure**: HTTPS required
 
-## Learn More
+## 🔐 Security
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+- Firebase Authentication for secure user management
+- HTTPS required for PWA functionality
+- Secure API endpoints
+- Protected routes
+- Environment variables for sensitive data
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## 📊 Data Structure
 
-### Code Splitting
+### Firestore Collections
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+- **users**: User profiles and preferences
+- **meals**: Daily meal logs
+- **bmi**: BMI tracking history
+- **notifications**: Push notification settings
 
-### Analyzing the Bundle Size
+## 🎨 UI/UX Features
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+- **Dark Mode**: Automatic theme switching
+- **Responsive Design**: Mobile-first approach
+- **Animations**: Smooth transitions and loading states
+- **Accessibility**: WCAG 2.1 compliant
+- **Intuitive Navigation**: Easy-to-use interface
 
-### Making a Progressive Web App
+## 🔔 Notification System
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+- **Meal Reminders**: Automatic notifications for unlogged meals
+- **Customizable**: Set your own notification preferences
+- **Background Support**: Works when app is closed
+- **Cross-Platform**: Works on all supported devices
 
-### Advanced Configuration
+## 📈 Analytics
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+- **User Engagement**: Track app usage
+- **Performance Metrics**: Monitor app performance
+- **Error Tracking**: Real-time error monitoring
+- **User Feedback**: Collect user suggestions
 
-### Deployment
+## 🤝 Contributing
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-### `npm run build` fails to minify
+## 📝 License
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- Firebase for backend services
+- React team for the amazing framework
+- Tailwind CSS for the utility-first CSS framework
+- Recharts for beautiful data visualization
+- TensorFlow.js for image processing capabilities
+
+## 📞 Support
+
+For support, email support@foodcalorie.com or join our Slack channel.
+
+## 🔍 Project Status
+
+[![Build Status](https://img.shields.io/github/workflow/status/piyushbaibhav/food-calorie/CI)](https://github.com/piyushbaibhav/food-calorie/actions)
+[![Version](https://img.shields.io/github/package-json/v/piyushbaibhav/food-calorie)](https://github.com/piyushbaibhav/food-calorie)
+[![License](https://img.shields.io/github/license/piyushbaibhav/food-calorie)](https://github.com/piyushbaibhav/food-calorie/blob/main/LICENSE)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/piyushbaibhav/food-calorie/pulls)
+
+---
+
+Made with ❤️ by [Piyush](https://github.com/piyushbaibhav)
