@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { collection, query, orderBy, getDocs, doc, deleteDoc } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, doc, deleteDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { getAuth } from 'firebase/auth';
 import dayjs from 'dayjs';
 import { useDarkMode } from '../context/DarkModeContext';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 const FoodLog = () => {
-  const [foodEntries, setFoodEntries] = useState([]);
+  const [foodEntries, setFoodEntries] = useState({});
   const [loading, setLoading] = useState(true);
   const [selectedEntry, setSelectedEntry] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -36,50 +38,51 @@ const FoodLog = () => {
   };
 
   useEffect(() => {
-    const fetchFoodEntries = async () => {
-      try {
-        const userId = auth.currentUser?.uid;
-        if (!userId) return;
+    const userId = auth.currentUser?.uid;
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
 
-        // Query the user's foodEntries subcollection
-        const userRef = doc(db, "users", userId);
-        const foodEntriesRef = collection(userRef, "foodEntries");
-        const q = query(foodEntriesRef, orderBy("timestamp", "desc"));
+    // Set up real-time listener
+    const userRef = doc(db, "users", userId);
+    const foodEntriesRef = collection(userRef, "foodEntries");
+    const q = query(foodEntriesRef, orderBy("timestamp", "desc"));
+
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const entries = [];
+      
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        const nutrition = extractNutrients(data.nutritionInfo);
         
-        const querySnapshot = await getDocs(q);
-        const entries = [];
-        
-        querySnapshot.forEach((doc) => {
-          const data = doc.data();
-          const nutrition = extractNutrients(data.nutritionInfo);
-          
-          entries.push({
-            id: doc.id,
-            ...data,
-            nutrition,
-            timestamp: data.timestamp?.toDate()
-          });
+        entries.push({
+          id: doc.id,
+          ...data,
+          nutrition,
+          timestamp: data.timestamp?.toDate()
         });
+      });
 
-        // Group entries by date
-        const groupedEntries = entries.reduce((acc, entry) => {
-          const date = dayjs(entry.timestamp).format('MM/DD/YYYY');
-          if (!acc[date]) {
-            acc[date] = [];
-          }
-          acc[date].push(entry);
-          return acc;
-        }, {});
+      // Group entries by date
+      const groupedEntries = entries.reduce((acc, entry) => {
+        const date = dayjs(entry.timestamp).format('MM/DD/YYYY');
+        if (!acc[date]) {
+          acc[date] = [];
+        }
+        acc[date].push(entry);
+        return acc;
+      }, {});
 
-        setFoodEntries(groupedEntries);
-        setLoading(false);
-      } catch (error) {
-        console.error('Error fetching food entries:', error);
-        setLoading(false);
-      }
-    };
+      setFoodEntries(groupedEntries);
+      setLoading(false);
+    }, (error) => {
+      console.error('Error listening to food entries:', error);
+      setLoading(false);
+    });
 
-    fetchFoodEntries();
+    // Cleanup subscription on unmount
+    return () => unsubscribe();
   }, [auth.currentUser]);
 
   const handleDelete = async (entryId, date) => {
@@ -109,6 +112,114 @@ const FoodLog = () => {
     setShowModal(true);
   };
 
+  const handleExportPDF = async () => {
+    try {
+      // Get the past week's entries
+      const oneWeekAgo = dayjs().subtract(7, 'day').startOf('day');
+      const pastWeekEntries = Object.entries(foodEntries).filter(([date]) => {
+        return dayjs(date, 'MM/DD/YYYY').isAfter(oneWeekAgo);
+      });
+
+      if (pastWeekEntries.length === 0) {
+        alert('No entries found for the past week');
+        return;
+      }
+
+      // Create a temporary div to hold the content
+      const content = document.createElement('div');
+      content.style.padding = '20px';
+      content.style.backgroundColor = isDarkMode ? '#1a1a1a' : '#ffffff';
+      content.style.color = isDarkMode ? '#ffffff' : '#000000';
+
+      // Add title
+      const title = document.createElement('h1');
+      title.textContent = 'Food Log - Past Week';
+      title.style.textAlign = 'center';
+      title.style.marginBottom = '20px';
+      title.style.fontSize = '24px';
+      content.appendChild(title);
+
+      // Add entries
+      pastWeekEntries.forEach(([date, entries]) => {
+        const dateSection = document.createElement('div');
+        dateSection.style.marginBottom = '20px';
+
+        const dateHeader = document.createElement('h2');
+        dateHeader.textContent = date;
+        dateHeader.style.fontSize = '18px';
+        dateHeader.style.marginBottom = '10px';
+        dateHeader.style.borderBottom = '1px solid #ccc';
+        dateHeader.style.paddingBottom = '5px';
+        dateSection.appendChild(dateHeader);
+
+        entries.forEach(entry => {
+          const entryDiv = document.createElement('div');
+          entryDiv.style.marginBottom = '10px';
+          entryDiv.style.padding = '10px';
+          entryDiv.style.border = '1px solid #ccc';
+          entryDiv.style.borderRadius = '5px';
+
+          const foodName = document.createElement('div');
+          foodName.textContent = `Food: ${entry.foodName}`;
+          foodName.style.fontWeight = 'bold';
+          foodName.style.marginBottom = '5px';
+
+          const time = document.createElement('div');
+          time.textContent = `Time: ${dayjs(entry.timestamp).format('h:mm A')}`;
+          time.style.marginBottom = '5px';
+
+          const nutrition = document.createElement('div');
+          nutrition.innerHTML = `
+            <div>Calories: ${entry.nutrition.calories} kcal</div>
+            <div>Protein: ${entry.nutrition.protein}g</div>
+            <div>Fat: ${entry.nutrition.fat}g</div>
+            <div>Carbs: ${entry.nutrition.carbs}g</div>
+            <div>Fiber: ${entry.nutrition.fiber}g</div>
+          `;
+
+          entryDiv.appendChild(foodName);
+          entryDiv.appendChild(time);
+          entryDiv.appendChild(nutrition);
+          dateSection.appendChild(entryDiv);
+        });
+
+        content.appendChild(dateSection);
+      });
+
+      // Add the content to the document
+      document.body.appendChild(content);
+
+      // Generate PDF
+      const canvas = await html2canvas(content);
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgWidth = 210;
+      const pageHeight = 295;
+      const imgHeight = canvas.height * imgWidth / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      // Remove the temporary content
+      document.body.removeChild(content);
+
+      // Save the PDF
+      pdf.save('food_log_past_week.pdf');
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      alert('Error generating PDF. Please try again.');
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -120,7 +231,19 @@ const FoodLog = () => {
   return (
     <div className="flex flex-col h-full">
       <div className="p-6 pb-0">
-        <h2 className={`text-2xl font-bold ${isDarkMode ? 'text-dark-text' : 'text-gray-800'} mb-6`}>Food Log</h2>
+        <div className="flex justify-between items-center mb-6">
+          <h2 className={`text-2xl font-bold ${isDarkMode ? 'text-dark-text' : 'text-gray-800'}`}>Food Log</h2>
+          <button
+            onClick={handleExportPDF}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+              isDarkMode 
+                ? 'bg-green-600 text-white hover:bg-green-700' 
+                : 'bg-green-600 text-white hover:bg-green-700'
+            }`}
+          >
+            Export Past Week
+          </button>
+        </div>
       </div>
       {Object.keys(foodEntries).length === 0 ? (
         <div className={`text-center ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} py-8`}>

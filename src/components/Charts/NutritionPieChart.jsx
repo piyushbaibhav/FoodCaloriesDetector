@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { collection, getDocs, query, orderBy, doc } from "firebase/firestore";
+import { collection, query, orderBy, onSnapshot, doc } from "firebase/firestore";
 import { db } from "../../firebase";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import dayjs from "dayjs";
@@ -41,6 +41,7 @@ const NutritionPieChart = () => {
     carbs: 0,
     fiber: 0,
   });
+  const [isAnimating, setIsAnimating] = useState(false);
   const auth = getAuth();
   const { isDarkMode } = useDarkMode();
 
@@ -67,53 +68,54 @@ const NutritionPieChart = () => {
   };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const userId = auth.currentUser?.uid;
-        if (!userId) return;
+    const userId = auth.currentUser?.uid;
+    if (!userId) return;
 
-        const userRef = doc(db, "users", userId);
-        const foodEntriesRef = collection(userRef, "foodEntries");
-        const q = query(foodEntriesRef, orderBy("timestamp", "desc"));
-        const querySnapshot = await getDocs(q);
+    const userRef = doc(db, "users", userId);
+    const foodEntriesRef = collection(userRef, "foodEntries");
+    const q = query(foodEntriesRef, orderBy("timestamp", "desc"));
 
-        let totalNutrients = {
-          calories: 0,
-          protein: 0,
-          fat: 0,
-          carbs: 0,
-          fiber: 0,
-        };
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      let totalNutrients = {
+        calories: 0,
+        protein: 0,
+        fat: 0,
+        carbs: 0,
+        fiber: 0,
+      };
 
-        const today = dayjs().startOf("day");
+      const today = dayjs().startOf("day");
 
-        querySnapshot.forEach((doc) => {
-          const data = doc.data();
-          const timestamp = data.timestamp?.toDate?.(); // convert Firestore timestamp
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        const timestamp = data.timestamp?.toDate?.();
 
-          if (timestamp && dayjs(timestamp).isAfter(today)) {
-            const nutrition = extractNutrients(data.nutritionInfo);
-            totalNutrients.calories += nutrition.calories;
-            totalNutrients.protein += nutrition.protein;
-            totalNutrients.fat += nutrition.fat;
-            totalNutrients.carbs += nutrition.carbs;
-            totalNutrients.fiber += nutrition.fiber;
-          }
-        });
+        if (timestamp && dayjs(timestamp).isAfter(today)) {
+          const nutrition = extractNutrients(data.nutritionInfo);
+          totalNutrients.calories += nutrition.calories;
+          totalNutrients.protein += nutrition.protein;
+          totalNutrients.fat += nutrition.fat;
+          totalNutrients.carbs += nutrition.carbs;
+          totalNutrients.fiber += nutrition.fiber;
+        }
+      });
 
-        setNutrientData({
-          calories: Number(totalNutrients.calories.toFixed(1)),
-          protein: Number(totalNutrients.protein.toFixed(1)),
-          fat: Number(totalNutrients.fat.toFixed(1)),
-          carbs: Number(totalNutrients.carbs.toFixed(1)),
-          fiber: Number(totalNutrients.fiber.toFixed(1)),
-        });
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
+      // Trigger animation
+      setIsAnimating(true);
+      setTimeout(() => setIsAnimating(false), 1000);
 
-    fetchData();
+      setNutrientData({
+        calories: Number(totalNutrients.calories.toFixed(1)),
+        protein: Number(totalNutrients.protein.toFixed(1)),
+        fat: Number(totalNutrients.fat.toFixed(1)),
+        carbs: Number(totalNutrients.carbs.toFixed(1)),
+        fiber: Number(totalNutrients.fiber.toFixed(1)),
+      });
+    }, (error) => {
+      console.error('Error listening to food entries:', error);
+    });
+
+    return () => unsubscribe();
   }, [auth.currentUser]);
 
   const chartData = [
@@ -148,6 +150,9 @@ const NutritionPieChart = () => {
               fill="#8884d8"
               dataKey="value"
               label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+              animationDuration={isAnimating ? 1000 : 0}
+              animationBegin={0}
+              animationEasing="ease-out"
             >
               {chartData.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={entry.color} />
@@ -169,7 +174,9 @@ const NutritionPieChart = () => {
         {chartData.map((item) => (
           <div
             key={item.name}
-            className="flex flex-col items-center p-3 rounded-lg bg-gray-50 dark:bg-gray-800"
+            className={`flex flex-col items-center p-3 rounded-lg bg-gray-50 dark:bg-gray-800 transition-all duration-1000 ${
+              isAnimating ? 'scale-105' : 'scale-100'
+            }`}
           >
             <div
               className="w-3 h-3 rounded-full mb-1"

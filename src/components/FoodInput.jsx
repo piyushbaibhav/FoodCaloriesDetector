@@ -5,6 +5,16 @@ import { useDarkMode } from "../context/DarkModeContext";
 
 const GEMINI_API_KEY = "AIzaSyA40OoIi5AEkJhyehzX_1hvXGlSAL-DEJE";
 
+// Loading Spinner Component
+const LoadingSpinner = () => (
+  <div className="flex justify-center items-center">
+    <div className="relative w-12 h-12">
+      <div className="absolute top-0 left-0 w-full h-full border-4 border-green-200 rounded-full"></div>
+      <div className="absolute top-0 left-0 w-full h-full border-4 border-green-600 rounded-full border-t-transparent animate-spin"></div>
+    </div>
+  </div>
+);
+
 // Food Icon Component
 const FoodIcon = () => (
   <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
@@ -370,11 +380,29 @@ Note: For complex dishes, provide approximate values based on typical recipes an
             : 'bg-green-600 text-white hover:bg-green-700'
         }`}
       >
-        {loading ? "Processing..." : "Add Food Entry"}
+        {loading ? (
+          <div className="flex items-center justify-center gap-2">
+            <LoadingSpinner />
+            <span>Processing...</span>
+          </div>
+        ) : (
+          "Add Food Entry"
+        )}
       </button>
 
       {/* Nutrition Data Display */}
-      {nutritionData && (
+      {loading ? (
+        <div className={`mt-6 p-6 rounded-lg border flex flex-col items-center justify-center gap-4 ${
+          isDarkMode 
+            ? 'bg-gray-800/50 border-gray-700' 
+            : 'bg-green-50 border-green-100'
+        }`}>
+          <LoadingSpinner />
+          <p className={`text-center ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+            Analyzing your food and fetching nutritional information...
+          </p>
+        </div>
+      ) : nutritionData ? (
         <div className={`mt-6 p-4 rounded-lg border ${
           isDarkMode 
             ? 'bg-gray-800/50 border-gray-700' 
@@ -389,7 +417,7 @@ Note: For complex dishes, provide approximate values based on typical recipes an
             isDarkMode ? 'text-gray-300' : 'text-gray-700'
           }`}>{nutritionData}</pre>
         </div>
-      )}
+      ) : null}
     </div>
   );
 };
