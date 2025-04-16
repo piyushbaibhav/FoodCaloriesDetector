@@ -14,12 +14,27 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const messaging = getMessaging(app);
+let messaging;
+
+// Check if browser supports Firebase Messaging
+if ('Notification' in window && 'serviceWorker' in navigator) {
+  try {
+    messaging = getMessaging(app);
+  } catch (error) {
+    console.error('Firebase Messaging is not supported:', error);
+  }
+}
+
 const auth = getAuth(app);
 const db = getFirestore(app);
 
 // Request permission for notifications
 export const requestNotificationPermission = async () => {
+  if (!messaging) {
+    console.log('Firebase Messaging is not supported in this browser.');
+    return null;
+  }
+
   try {
     const permission = await Notification.requestPermission();
     if (permission === 'granted') {
@@ -37,6 +52,10 @@ export const requestNotificationPermission = async () => {
 
 // Handle incoming messages when app is in foreground
 export const onMessageListener = () => {
+  if (!messaging) {
+    return Promise.resolve(null);
+  }
+
   return new Promise((resolve) => {
     onMessage(messaging, (payload) => {
       resolve(payload);
@@ -100,15 +119,24 @@ export const checkMealLogs = async () => {
 // Send notification
 const sendNotification = (title, body) => {
   if ('Notification' in window && Notification.permission === 'granted') {
-    new Notification(title, {
-      body,
-      icon: '/logo192.png'
-    });
+    try {
+      new Notification(title, {
+        body,
+        icon: '/logo192.png'
+      });
+    } catch (error) {
+      console.error('Error sending notification:', error);
+    }
   }
 };
 
 // Start periodic checks
 export const startMealReminders = () => {
+  if (!messaging) {
+    console.log('Firebase Messaging is not supported in this browser.');
+    return;
+  }
+
   // Check every hour
   setInterval(checkMealLogs, 60 * 60 * 1000);
   // Initial check
