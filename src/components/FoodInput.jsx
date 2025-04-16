@@ -281,7 +281,7 @@ Note: For complex dishes, provide approximate values based on typical recipes an
           Food Image (Optional)
         </label>
         
-        <div className="flex flex-col md:flex-row gap-4">
+        <div className="flex flex-col sm:flex-row gap-4">
           {/* Camera Button */}
           <button
             type="button"
@@ -324,7 +324,7 @@ Note: For complex dishes, provide approximate values based on typical recipes an
               }`}
             />
             <canvas ref={canvasRef} className="hidden" width="300" height="200" />
-            <div className="flex justify-center gap-4">
+            <div className="flex flex-col sm:flex-row justify-center gap-4">
               <button
                 onClick={capturePhoto}
                 className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all duration-300"
@@ -384,15 +384,15 @@ Note: For complex dishes, provide approximate values based on typical recipes an
 
       {/* Nutrition Data Display */}
       {loading ? (
-        <div className={`mt-6 p-6 rounded-lg border flex flex-col items-center justify-center gap-4 ${
+        <div className={`mt-6 p-4 lg:p-6 rounded-lg border flex flex-col items-center justify-center gap-4 ${
           isDarkMode 
             ? 'bg-gray-800/50 border-gray-700' 
             : 'bg-green-50 border-green-100'
         }`}>
-          <div className="w-full h-64">
+          <div className="hidden lg:block w-full h-64">
             <Spline scene="https://prod.spline.design/wsu-PDzgyPSpoKcr/scene.splinecode" />
           </div>
-          <p className={`text-center ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+          <p className={`text-center text-sm lg:text-base ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
             Analyzing your food and fetching nutritional information...
           </p>
         </div>

@@ -217,18 +217,18 @@ const CalorieChart = () => {
   };
 
   return (
-    <div className="bg-white dark:bg-dark-card p-6 rounded-xl shadow-md">
-      <div className="flex items-center justify-between mb-6">
+    <div className="bg-white dark:bg-dark-card p-4 lg:p-6 rounded-xl shadow-md">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-4 lg:mb-6 gap-4">
         <div className="flex items-center gap-2">
           <ChartIcon className="text-green-600 dark:text-green-400" />
-          <h2 className="text-xl font-semibold text-gray-800 dark:text-dark-text">
+          <h2 className="text-lg lg:text-xl font-semibold text-gray-800 dark:text-dark-text">
             Calorie History
           </h2>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 overflow-x-auto pb-2">
           <button
             onClick={() => setFilter("today")}
-            className={`p-2 rounded-lg ${
+            className={`px-3 py-1.5 lg:px-4 lg:py-2 rounded-lg text-sm lg:text-base whitespace-nowrap ${
               filter === "today"
                 ? "bg-green-600 text-white"
                 : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
@@ -238,7 +238,7 @@ const CalorieChart = () => {
           </button>
           <button
             onClick={() => setFilter("7days")}
-            className={`p-2 rounded-lg ${
+            className={`px-3 py-1.5 lg:px-4 lg:py-2 rounded-lg text-sm lg:text-base whitespace-nowrap ${
               filter === "7days"
                 ? "bg-green-600 text-white"
                 : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
@@ -248,7 +248,7 @@ const CalorieChart = () => {
           </button>
           <button
             onClick={() => setFilter("30days")}
-            className={`p-2 rounded-lg ${
+            className={`px-3 py-1.5 lg:px-4 lg:py-2 rounded-lg text-sm lg:text-base whitespace-nowrap ${
               filter === "30days"
                 ? "bg-green-600 text-white"
                 : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
@@ -259,11 +259,11 @@ const CalorieChart = () => {
         </div>
       </div>
 
-      <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-        <div className="flex space-x-2">
+      <div className="flex flex-col gap-4 mb-4 lg:mb-6">
+        <div className="flex flex-wrap gap-2">
           <button
             onClick={() => setChartType("bar")}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+            className={`px-3 py-1.5 lg:px-4 lg:py-2 rounded-lg text-sm lg:text-base font-medium transition-all whitespace-nowrap ${
               chartType === "bar"
                 ? "bg-green-600 text-white shadow-md"
                 : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
@@ -273,7 +273,7 @@ const CalorieChart = () => {
           </button>
           <button
             onClick={() => setChartType("area")}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+            className={`px-3 py-1.5 lg:px-4 lg:py-2 rounded-lg text-sm lg:text-base font-medium transition-all whitespace-nowrap ${
               chartType === "area"
                 ? "bg-green-600 text-white shadow-md"
                 : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
@@ -283,7 +283,7 @@ const CalorieChart = () => {
           </button>
           <button
             onClick={() => setChartType("line")}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+            className={`px-3 py-1.5 lg:px-4 lg:py-2 rounded-lg text-sm lg:text-base font-medium transition-all whitespace-nowrap ${
               chartType === "line"
                 ? "bg-green-600 text-white shadow-md"
                 : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
@@ -293,10 +293,10 @@ const CalorieChart = () => {
           </button>
         </div>
 
-        <div className="flex space-x-2">
+        <div className="flex flex-wrap gap-2">
           <button
             onClick={() => setSelectedNutrient("calories")}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+            className={`px-3 py-1.5 lg:px-4 lg:py-2 rounded-lg text-sm lg:text-base font-medium transition-all whitespace-nowrap ${
               selectedNutrient === "calories"
                 ? "bg-green-600 text-white shadow-md"
                 : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
@@ -306,7 +306,7 @@ const CalorieChart = () => {
           </button>
           <button
             onClick={() => setSelectedNutrient("protein")}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+            className={`px-3 py-1.5 lg:px-4 lg:py-2 rounded-lg text-sm lg:text-base font-medium transition-all whitespace-nowrap ${
               selectedNutrient === "protein"
                 ? "bg-green-600 text-white shadow-md"
                 : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
@@ -316,7 +316,7 @@ const CalorieChart = () => {
           </button>
           <button
             onClick={() => setSelectedNutrient("carbs")}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+            className={`px-3 py-1.5 lg:px-4 lg:py-2 rounded-lg text-sm lg:text-base font-medium transition-all whitespace-nowrap ${
               selectedNutrient === "carbs"
                 ? "bg-green-600 text-white shadow-md"
                 : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
@@ -326,7 +326,7 @@ const CalorieChart = () => {
           </button>
           <button
             onClick={() => setSelectedNutrient("fat")}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+            className={`px-3 py-1.5 lg:px-4 lg:py-2 rounded-lg text-sm lg:text-base font-medium transition-all whitespace-nowrap ${
               selectedNutrient === "fat"
                 ? "bg-green-600 text-white shadow-md"
                 : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
@@ -337,12 +337,12 @@ const CalorieChart = () => {
         </div>
       </div>
 
-      <div className="h-[400px]">
+      <div className="h-[300px] lg:h-[400px]">
         <ResponsiveContainer width="100%" height="100%">
           {chartType === "bar" ? (
             <BarChart
               data={chartData}
-              margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+              margin={{ top: 20, right: 10, left: 10, bottom: 5 }}
             >
               <defs>
                 <linearGradient id="caloriesGradient" x1="0" y1="0" x2="0" y2="1">
@@ -369,11 +369,11 @@ const CalorieChart = () => {
               <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? "#404040" : "#e5e7eb"} />
               <XAxis 
                 dataKey="date" 
-                tick={{ fill: isDarkMode ? "#e5e5e5" : "#333333" }}
+                tick={{ fill: isDarkMode ? "#e5e5e5" : "#333333", fontSize: 12 }}
                 axisLine={{ stroke: isDarkMode ? "#e5e5e5" : "#333333" }}
               />
               <YAxis 
-                tick={{ fill: isDarkMode ? "#e5e5e5" : "#333333" }}
+                tick={{ fill: isDarkMode ? "#e5e5e5" : "#333333", fontSize: 12 }}
                 axisLine={{ stroke: isDarkMode ? "#e5e5e5" : "#333333" }}
                 domain={[0, 'dataMax + 10']}
               />
@@ -391,7 +391,7 @@ const CalorieChart = () => {
           ) : chartType === "area" ? (
             <AreaChart
               data={chartData}
-              margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+              margin={{ top: 20, right: 10, left: 10, bottom: 5 }}
             >
               <defs>
                 <linearGradient id="caloriesGradient" x1="0" y1="0" x2="0" y2="1">
@@ -418,11 +418,11 @@ const CalorieChart = () => {
               <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? "#404040" : "#e5e7eb"} />
               <XAxis 
                 dataKey="date" 
-                tick={{ fill: isDarkMode ? "#e5e5e5" : "#333333" }}
+                tick={{ fill: isDarkMode ? "#e5e5e5" : "#333333", fontSize: 12 }}
                 axisLine={{ stroke: isDarkMode ? "#e5e5e5" : "#333333" }}
               />
               <YAxis 
-                tick={{ fill: isDarkMode ? "#e5e5e5" : "#333333" }}
+                tick={{ fill: isDarkMode ? "#e5e5e5" : "#333333", fontSize: 12 }}
                 axisLine={{ stroke: isDarkMode ? "#e5e5e5" : "#333333" }}
                 domain={[0, 'dataMax + 10']}
               />
@@ -442,16 +442,16 @@ const CalorieChart = () => {
           ) : (
             <LineChart
               data={chartData}
-              margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+              margin={{ top: 20, right: 10, left: 10, bottom: 5 }}
             >
               <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? "#404040" : "#e5e7eb"} />
               <XAxis 
                 dataKey="date" 
-                tick={{ fill: isDarkMode ? "#e5e5e5" : "#333333" }}
+                tick={{ fill: isDarkMode ? "#e5e5e5" : "#333333", fontSize: 12 }}
                 axisLine={{ stroke: isDarkMode ? "#e5e5e5" : "#333333" }}
               />
               <YAxis 
-                tick={{ fill: isDarkMode ? "#e5e5e5" : "#333333" }}
+                tick={{ fill: isDarkMode ? "#e5e5e5" : "#333333", fontSize: 12 }}
                 axisLine={{ stroke: isDarkMode ? "#e5e5e5" : "#333333" }}
                 domain={[0, 'dataMax + 10']}
               />
@@ -463,8 +463,8 @@ const CalorieChart = () => {
                 name={selectedNutrient.charAt(0).toUpperCase() + selectedNutrient.slice(1)}
                 stroke={getNutrientColor(selectedNutrient)} 
                 strokeWidth={3}
-                dot={{ fill: getNutrientColor(selectedNutrient), r: 6 }}
-                activeDot={{ r: 8, fill: getNutrientColor(selectedNutrient) }}
+                dot={{ fill: getNutrientColor(selectedNutrient), r: 4 }}
+                activeDot={{ r: 6, fill: getNutrientColor(selectedNutrient) }}
                 animationDuration={1500}
                 animationBegin={0}
               />
@@ -473,8 +473,8 @@ const CalorieChart = () => {
         </ResponsiveContainer>
       </div>
 
-      <div className="mt-6 text-center">
-        <p className="text-lg font-semibold text-gray-800">
+      <div className="mt-4 lg:mt-6 text-center">
+        <p className="text-base lg:text-lg font-semibold text-gray-800 dark:text-dark-text">
           Total {selectedNutrient.charAt(0).toUpperCase() + selectedNutrient.slice(1)}:{" "}
           <span className="text-green-600 font-bold">
             {selectedNutrient === "calories" 
