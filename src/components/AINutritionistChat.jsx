@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { collection, query, orderBy, getDocs, doc } from "firebase/firestore";
 import { db } from "../firebase";
 import { getAuth } from "firebase/auth";
 import dayjs from "dayjs";
 import { useDarkMode } from "../context/DarkModeContext";
+import Spline from '@splinetool/react-spline';
 
 const GEMINI_API_KEY = "AIzaSyA40OoIi5AEkJhyehzX_1hvXGlSAL-DEJE";
 
@@ -33,6 +34,15 @@ const AINutritionistChat = () => {
   const [foodLog, setFoodLog] = useState([]);
   const auth = getAuth();
   const { isDarkMode } = useDarkMode();
+  const messagesEndRef = useRef(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   useEffect(() => {
     const fetchFoodLog = async () => {
@@ -145,85 +155,101 @@ Note: Use markdown formatting for **bold** text to emphasize key points.
   };
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="p-6 pb-0">
-        <div className="flex items-center justify-center mb-6">
-          <div className={`w-12 h-12 ${isDarkMode ? 'bg-gray-700' : 'bg-green-100'} rounded-xl flex items-center justify-center mr-3`}>
-            <ChatIcon className={isDarkMode ? "text-green-400" : "text-green-600"} />
+    <>
+      {/* Chat Component */}
+      <div className="w-1/2 h-full">
+        <div className="flex flex-col h-full">
+          <div className="p-6 pb-0">
+            <div className="flex items-center justify-center mb-6">
+              <div className={`w-12 h-12 ${isDarkMode ? 'bg-gray-700' : 'bg-green-100'} rounded-xl flex items-center justify-center mr-3`}>
+                <ChatIcon className={isDarkMode ? "text-green-400" : "text-green-600"} />
+              </div>
+              <h2 className={`text-2xl font-bold ${isDarkMode ? 'text-dark-text' : 'text-gray-800'}`}>
+                AI <span className="text-green-600">Nutritionist</span>
+              </h2>
+            </div>
+            <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} text-center mb-6`}>
+              Ask me anything about nutrition, diet, or meal planning!
+            </p>
           </div>
-          <h2 className={`text-2xl font-bold ${isDarkMode ? 'text-dark-text' : 'text-gray-800'}`}>
-            AI <span className="text-green-600">Nutritionist</span>
-          </h2>
-        </div>
-        <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} text-center mb-6`}>
-          Ask me anything about nutrition, diet, or meal planning!
-        </p>
-      </div>
 
-      <div className="flex-1 overflow-y-auto px-6 pb-6" style={{ maxHeight: 'calc(100vh - 300px)' }}>
-        <div className="space-y-4">
-          {messages.map((message, index) => (
-            <div
-              key={index}
-              className={`flex ${
-                message.role === "user" ? "justify-end" : "justify-start"
-              }`}
-            >
-              <div
-                className={`max-w-[80%] p-4 rounded-lg ${
-                  message.role === "user"
-                    ? "bg-green-600 text-white"
-                    : isDarkMode 
-                      ? "bg-gray-800 text-gray-200" 
-                      : "bg-gray-100 text-gray-800"
-                }`}
-              >
-                <div className={`prose prose-sm max-w-none ${isDarkMode ? 'prose-invert' : ''}`}>
-                  {message.role === "assistant" ? (
-                    <div dangerouslySetInnerHTML={{ 
-                      __html: message.content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                    }} />
-                  ) : (
-                    <p>{message.content}</p>
-                  )}
-                </div>
+          <div className="flex-1 flex flex-col min-h-0">
+            <div className="flex-1 overflow-y-auto px-6" style={{ maxHeight: 'calc(100vh - 300px)' }}>
+              <div className="space-y-4">
+                {messages.map((message, index) => (
+                  <div
+                    key={index}
+                    className={`flex ${
+                      message.role === "user" ? "justify-end" : "justify-start"
+                    }`}
+                  >
+                    <div
+                      className={`max-w-[80%] p-4 rounded-lg ${
+                        message.role === "user"
+                          ? "bg-green-600 text-white"
+                          : isDarkMode 
+                            ? "bg-gray-800 text-gray-200" 
+                            : "bg-gray-100 text-gray-800"
+                      }`}
+                    >
+                      <div className={`prose prose-sm max-w-none ${isDarkMode ? 'prose-invert' : ''}`}>
+                        {message.role === "assistant" ? (
+                          <div dangerouslySetInnerHTML={{ 
+                            __html: message.content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                          }} />
+                        ) : (
+                          <p>{message.content}</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                {loading && (
+                  <div className="flex justify-start">
+                    <div className={`${isDarkMode ? 'bg-gray-800 text-gray-200' : 'bg-gray-100 text-gray-800'} p-4 rounded-lg max-w-[80%]`}>
+                      <div className="flex space-x-2">
+                        <div className={`w-2 h-2 ${isDarkMode ? 'bg-gray-400' : 'bg-gray-400'} rounded-full animate-bounce`}></div>
+                        <div className={`w-2 h-2 ${isDarkMode ? 'bg-gray-400' : 'bg-gray-400'} rounded-full animate-bounce`} style={{ animationDelay: "0.2s" }}></div>
+                        <div className={`w-2 h-2 ${isDarkMode ? 'bg-gray-400' : 'bg-gray-400'} rounded-full animate-bounce`} style={{ animationDelay: "0.4s" }}></div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                <div ref={messagesEndRef} />
               </div>
             </div>
-          ))}
-          {loading && (
-            <div className="flex justify-start">
-              <div className={`${isDarkMode ? 'bg-gray-800 text-gray-200' : 'bg-gray-100 text-gray-800'} p-4 rounded-lg max-w-[80%]`}>
-                <div className="flex space-x-2">
-                  <div className={`w-2 h-2 ${isDarkMode ? 'bg-gray-400' : 'bg-gray-400'} rounded-full animate-bounce`}></div>
-                  <div className={`w-2 h-2 ${isDarkMode ? 'bg-gray-400' : 'bg-gray-400'} rounded-full animate-bounce`} style={{ animationDelay: "0.2s" }}></div>
-                  <div className={`w-2 h-2 ${isDarkMode ? 'bg-gray-400' : 'bg-gray-400'} rounded-full animate-bounce`} style={{ animationDelay: "0.4s" }}></div>
-                </div>
-              </div>
+
+            <div className="p-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <form onSubmit={handleSubmit} className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder="Ask a nutrition question..."
+                  className={`flex-1 px-4 py-3 border ${isDarkMode ? 'border-gray-700 bg-gray-800 text-gray-200' : 'border-gray-200 bg-white text-gray-800'} rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent`}
+                  disabled={loading}
+                />
+                <button
+                  type="submit"
+                  disabled={loading || !input.trim()}
+                  className="bg-green-600 text-white p-3 rounded-lg hover:bg-green-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <SendIcon />
+                </button>
+              </form>
             </div>
-          )}
+          </div>
         </div>
       </div>
 
-      <div className="p-6 pt-0">
-        <form onSubmit={handleSubmit} className="flex items-center gap-2">
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask a nutrition question..."
-            className={`flex-1 px-4 py-3 border ${isDarkMode ? 'border-gray-700 bg-gray-800 text-gray-200' : 'border-gray-200 bg-white text-gray-800'} rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent`}
-            disabled={loading}
-          />
-          <button
-            type="submit"
-            disabled={loading || !input.trim()}
-            className="bg-green-600 text-white p-3 rounded-lg hover:bg-green-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <SendIcon />
-          </button>
-        </form>
+      {/* Spline Animation - Completely Separate */}
+      <div className="w-1/2 h-full">
+        <Spline 
+          scene="https://prod.spline.design/ZVnO7CFbDSv4Cy0c/scene.splinecode"
+          className="w-full h-full"
+        />
       </div>
-    </div>
+    </>
   );
 };
 

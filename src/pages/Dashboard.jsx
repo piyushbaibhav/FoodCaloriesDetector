@@ -53,11 +53,13 @@ const Dashboard = () => {
         );
       case "nutritionist":
         return (
-          <div className="mt-10 w-full max-w-5xl bg-white dark:bg-dark-card p-6 rounded-xl shadow-md">
+          <div className="mt-10 w-full max-w-7xl bg-white dark:bg-dark-card p-6 rounded-xl shadow-md">
             <h1 className="text-2xl font-bold text-green-700 dark:text-green-400 mb-6">
               AI Nutritionist Chat
             </h1>
-            <AINutritionistChat />
+            <div className="flex h-[calc(100vh-250px)]">
+              <AINutritionistChat />
+            </div>
           </div>
         );
       case "foodlog":
