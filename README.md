@@ -4,6 +4,13 @@ An intelligent food tracking application that uses AI to help users maintain a h
 
 ![Food Calorie Tracker Screenshot](public/screenshots/desktop.png)
 
+
+## Demo
+
+Check out our demo video [here](https://www.veed.io/view/ed501295-74d5-430f-8c94-e544178d42f6?panel=share).
+
+
+
 ## ✨ Core Features
 
 ### 🧠 AI-Powered Features
